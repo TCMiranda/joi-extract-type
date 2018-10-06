@@ -32,7 +32,10 @@ declare module "joi" {
         T3 extends mappedSchema = never,
         T4 extends mappedSchema = never,
         T5 extends mappedSchema = never,
-    > extends AnySchema { }
+    > extends AnySchema {
+
+        // TODO copy alternatives signature to class alias try
+    }
 
     export function alternatives<
         T1 extends mappedSchema, T2 extends mappedSchema, T3 extends mappedSchema, T4 extends mappedSchema, T5 extends mappedSchema,
@@ -57,6 +60,8 @@ declare module "joi" {
     >(a: T1, b: T2): AlternativesSchema<
         extractType<T1>, extractType<T2>
     >;
+
+    // TODO copy alternatives signature to the alias `alt`
 
     // Extraction
     type extractMap<T> = { [K in keyof T]: extractType<T[K]> };
