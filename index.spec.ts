@@ -1,7 +1,11 @@
 import * as Joi from 'joi';
 import './index';
 
-// Tests: the compiler shouldn't find problems and should recursively map the schema to correct type
+// Unkown types or AnySchema defaults to type any
+const any_schema = Joi.any();
+type extractAny = Joi.extractType<typeof any_schema>;
+export const extractedAny: extractAny = 'anything';
+
 const is_enabled = Joi.boolean();
 type extractBoolean = Joi.extractType<typeof is_enabled>;
 export const extractedBoolean: extractBoolean = true;
@@ -10,9 +14,22 @@ const full_name = Joi.string();
 type extractString = Joi.extractType<typeof full_name>;
 export const extractedString: extractString = 'string';
 
-const user = Joi.object({ full_name, is_enabled });
+const created_at = Joi.date();
+type extractDate = Joi.extractType<typeof created_at>;
+export const extractedDate: extractDate = new Date();
+
+const priority = Joi.number();
+type extractNumber = Joi.extractType<typeof priority>;
+export const extractedNumber: extractNumber = 5;
+
+const user = Joi.object({ full_name, is_enabled, created_at, priority });
 type extractObject = Joi.extractType<typeof user>;
-export const extractedObject: extractObject = { full_name: extractedString, is_enabled: extractedBoolean };
+export const extractedObject: extractObject = {
+    created_at: extractedDate,
+    full_name: extractedString,
+    is_enabled: extractedBoolean,
+    priority: extractedNumber,
+};
 
 const roles = Joi.array().items(Joi.string());
 type extractArray = Joi.extractType<typeof roles>;
@@ -41,3 +58,14 @@ export const extractedComplexType: extractComplexType = {
     role: 'admin',
     pipeline_rules: [extractedRule]
 };
+
+function someFunction() { return someFunction; }
+const createUserSchema = Joi.func<typeof someFunction>();
+type extractFunction = Joi.extractType<typeof createUserSchema>;
+export const extractedFunction: extractFunction = someFunction;
+
+// TODO alternatives as array
+const string_array_schema = [Joi.string(), Joi.array().items(Joi.string())];
+type extractStringArray = Joi.extractType<typeof string_array_schema>;
+export const extractStringArrayString: extractStringArray = 'string';
+export const extractStringArrayArray: extractStringArray = ['string'];
