@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "lib": ["es2015.iterable"],
+    "module": "commonjs",
+    "noEmit": true,
+    "strict": true,
+    "target": "es5"
+  },
+  "include": [
+      "index.ts"
+  ],
+  "exclude": [
+      "node_modules",
+      "**/*.spec.ts"
+  ]
+}
