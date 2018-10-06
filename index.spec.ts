@@ -64,6 +64,17 @@ const createUserSchema = Joi.func<typeof someFunction>();
 type extractFunction = Joi.extractType<typeof createUserSchema>;
 export const extractedFunction: extractFunction = someFunction;
 
+const number_string = Joi.alternatives(Joi.number(), Joi.string());
+type extractNumberString = Joi.extractType<typeof number_string>;
+export const extractNumberStringNumber: extractNumberString = 2;
+export const extractNumberStringString: extractNumberString = '2';
+
+const date_time = Joi.alternatives(Joi.date(), Joi.number(), Joi.string());
+type extractDateTime = Joi.extractType<typeof date_time>;
+export const extractDateTimeDate: extractDateTime = new Date();
+export const extractDateTimeTime: extractDateTime = +new Date();
+export const extractDateTimeString: extractDateTime = new Date().toISOString();
+
 // TODO alternatives as array
 const string_array_schema = [Joi.string(), Joi.array().items(Joi.string())];
 type extractStringArray = Joi.extractType<typeof string_array_schema>;

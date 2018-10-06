@@ -1,5 +1,4 @@
 import "joi";
-import { NumberSchema } from "joi";
 
 declare module "joi" {
 
@@ -26,6 +25,39 @@ declare module "joi" {
 
     export function func<T extends Function>(): FunctionSchema<T>;
 
+    // Complex types patch: Alternatives
+    export interface AlternativesSchema<
+        T1 extends mappedSchema = never,
+        T2 extends mappedSchema = never,
+        T3 extends mappedSchema = never,
+        T4 extends mappedSchema = never,
+        T5 extends mappedSchema = never,
+    > extends AnySchema { }
+
+    export function alternatives<
+        T1 extends mappedSchema, T2 extends mappedSchema, T3 extends mappedSchema, T4 extends mappedSchema, T5 extends mappedSchema,
+    >(a: T1, b: T2, c: T3, d: T4, e: T5): AlternativesSchema<
+        extractType<T1>, extractType<T2>, extractType<T3>, extractType<T4>, extractType<T5>
+    >;
+
+    export function alternatives<
+        T1 extends mappedSchema, T2 extends mappedSchema, T3 extends mappedSchema, T4 extends mappedSchema,
+    >(a: T1, b: T2, c: T3, d: T4): AlternativesSchema<
+        extractType<T1>, extractType<T2>, extractType<T3>, extractType<T4>
+    >;
+
+    export function alternatives<
+        T1 extends mappedSchema, T2 extends mappedSchema, T3 extends mappedSchema,
+    >(a: T1, b: T2, c: T3): AlternativesSchema<
+        extractType<T1>, extractType<T2>, extractType<T3>
+    >;
+
+    export function alternatives<
+        T1 extends mappedSchema, T2 extends mappedSchema,
+    >(a: T1, b: T2): AlternativesSchema<
+        extractType<T1>, extractType<T2>
+    >;
+
     // Extraction
     type extractMap<T> = { [K in keyof T]: extractType<T[K]> };
 
@@ -40,5 +72,9 @@ declare module "joi" {
         T extends ObjectSchema<infer O> ? O :
         T extends mappedSchemaMap<infer O> ? O :
         T extends Array<infer O> ? any : // O : // TODO
+        T extends AlternativesSchema<infer O1, infer O2, infer O3, infer O4, infer O5> ? O1 | O2 | O3 | O4 | O5 :
+        T extends AlternativesSchema<infer O1, infer O2, infer O3, infer O4> ? O1 | O2 | O3 | O4 :
+        T extends AlternativesSchema<infer O1, infer O2, infer O3> ? O1 | O2 | O3 :
+        T extends AlternativesSchema<infer O1, infer O2> ? O1 | O2 :
         any;
 }
