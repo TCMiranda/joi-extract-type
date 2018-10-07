@@ -8,7 +8,8 @@
     "target": "es5"
   },
   "include": [
-      "index.ts"
+      "index.ts",
+      "tuple.ts"
   ],
   "exclude": [
       "node_modules",

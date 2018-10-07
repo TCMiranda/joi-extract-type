@@ -1,5 +1,5 @@
 import * as Joi from 'joi';
-import './index';
+import { tuple } from './index';
 
 // Unkown types or AnySchema defaults to type any
 const any_schema = Joi.any();
@@ -31,7 +31,7 @@ export const extractedObject: extractObject = {
     priority: extractedNumber,
 };
 
-const roles = Joi.array().items(Joi.string());
+const roles = Joi.array().items(Joi.string().valid('admin', 'member', 'guest'));
 type extractArray = Joi.extractType<typeof roles>;
 export const extactedArray: extractArray = ['admin'];
 
@@ -47,7 +47,7 @@ export const jobOperatorRoleSchema = Joi.object({
     id: Joi.string().required(),
     user_id: Joi.string().required(),
     job_id: Joi.string().required(),
-    role: Joi.string().valid([ 'recruiter', 'requester' ]),
+    role: Joi.string().valid(tuple('recruiter', 'requester')),
     pipeline_rules: Joi.array().items(rule),
 });
 type extractComplexType = Joi.extractType<typeof jobOperatorRoleSchema>;
@@ -55,7 +55,7 @@ export const extractedComplexType: extractComplexType = {
     id: '2015',
     user_id: '102',
     job_id: '52',
-    role: 'admin',
+    role: 'requester',
     pipeline_rules: [extractedRule]
 };
 
@@ -76,7 +76,12 @@ export const extractDateTimeTime: extractDateTime = +new Date();
 export const extractDateTimeString: extractDateTime = new Date().toISOString();
 
 // TODO alternatives as array
-const string_array_schema = [Joi.string(), Joi.array().items(Joi.string())];
+const string_array_schema = [
+    Joi.string(),
+    Joi.array()
+        .items([Joi.string(), Joi.number()])
+        .valid('string', 2) // TODO overwrite valid on ArraySchema
+];
 type extractStringArray = Joi.extractType<typeof string_array_schema>;
 export const extractStringArrayString: extractStringArray = 'string';
-export const extractStringArrayArray: extractStringArray = ['string'];
+export const extractStringArrayArray: extractStringArray = ['string', 2];
