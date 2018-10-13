@@ -35,7 +35,13 @@ const roles = Joi.array().items(Joi.string().valid('admin', 'member', 'guest'));
 type extractArray = Joi.extractType<typeof roles>;
 export const extactedArray: extractArray = ['admin'];
 
-const apply = Joi.array().items(Joi.object({ id: Joi.string() }));
+const uuid_exp = `[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}`;
+const uuid_pattern = new RegExp(uuid_exp, 'i');
+const uuid = Joi.string().regex(uuid_pattern);
+type extractUuid = Joi.extractType<typeof uuid>;
+export const extractedUuid: extractUuid = '123e4567-e89b-12d3-a456-426655440000';
+
+const apply = Joi.array().items(Joi.object({ id: uuid }));
 type extractApply = Joi.extractType<typeof apply>;
 export const extractedApply: extractApply = [{ id: '3' }, { id: '4' }];
 

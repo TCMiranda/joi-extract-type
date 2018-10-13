@@ -23,13 +23,13 @@ This library enhances Joi interfaces to provides an utility to infer the type fr
 ## Usage
 
 Import the library and patch Joi's typings:
-```Typescript
+```ts
 import * as Joi from 'joi';
 import './index';
 ```
 
 Create the schemas and use `Joi.extractType` to infer the type:
-```Typescript
+```ts
 const is_enabled = Joi.boolean();
 type extractBoolean = Joi.extractType<typeof is_enabled>;
 export const extractedBoolean: extractBoolean = true;
@@ -39,7 +39,7 @@ export const extractedBoolean: extractBoolean = true;
 
 The following code is copied from this library spec, which compiles the code with `tsc` that should not output any errors.
 
-```Typescript
+```ts
 const is_enabled = Joi.boolean();
 type extractBoolean = Joi.extractType<typeof is_enabled>;
 export const extractedBoolean: extractBoolean = true;
