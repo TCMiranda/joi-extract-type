@@ -10,11 +10,28 @@ declare module "joi" {
     type mappedSchema = SchemaLike | mappedSchemaMap;
     type mappedSchemaMap<T extends schemaMap = any> = { [K in keyof T]: T[K]; };
 
-    export interface StringSchema<N = string> extends AnySchema {
+    export interface StringSchema<N = string, R = false> extends AnySchema {
         valid<T extends string[]>(...values: T): StringSchema<typeof values[number]>;
         valid<T extends string[]>(values: T): StringSchema<typeof values[number]>;
         valid(...values: any[]): this;
         valid(values: any[]): this;
+
+        required(): StringSchema<N, true>;
+        exist(): StringSchema<N, true>;
+
+        optional(): StringSchema<N, false>;
+
+        // TODO: default
+        // default(value: any, description?: string): this;
+        // default(): this;
+
+        // TODO: concat
+        // concat(schema: this): this;
+
+        // TODO: when
+        // when(ref: string, options: WhenOptions): AlternativesSchema;
+        // when(ref: Reference, options: WhenOptions): AlternativesSchema;
+        // when(ref: Schema, options: WhenSchemaOptions): AlternativesSchema;
     }
 
     export function string<T extends string>(): StringSchema<extractType<T>>;
@@ -71,6 +88,8 @@ declare module "joi" {
     // TODO copy alternatives signature to the alias `alt`
 
     // Extraction
+    // TODO: find required or optional properties:
+    // Partial<T> & PickRequired<T>
     type extractMap<T> = { [K in keyof T]: extractType<T[K]> };
 
     export type extractType<T extends mappedSchema> =

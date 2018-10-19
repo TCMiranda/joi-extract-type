@@ -22,10 +22,17 @@ const priority = Joi.number();
 type extractNumber = Joi.extractType<typeof priority>;
 export const extractedNumber: extractNumber = 5;
 
-const user = Joi.object({ full_name, is_enabled, created_at, priority });
+const user = Joi.object({
+    full_name: full_name.required(),
+    short_desc: Joi.string(),
+    is_enabled,
+    created_at,
+    priority
+});
 type extractObject = Joi.extractType<typeof user>;
 export const extractedObject: extractObject = {
     created_at: extractedDate,
+    short_desc: undefined,
     full_name: extractedString,
     is_enabled: extractedBoolean,
     priority: extractedNumber,
@@ -81,7 +88,6 @@ export const extractDateTimeDate: extractDateTime = new Date();
 export const extractDateTimeTime: extractDateTime = +new Date();
 export const extractDateTimeString: extractDateTime = new Date().toISOString();
 
-// TODO alternatives as array
 const string_array_schema = [
     Joi.string(),
     Joi.array()
