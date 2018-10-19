@@ -11,7 +11,7 @@ declare module "joi" {
     type mappedSchemaMap<T extends schemaMap = any> = { [K in keyof T]: T[K]; };
 
     export interface StringSchema<N = string> extends AnySchema {
-        valid<T extends string[]>(...values: T): StringSchema<typeof values[number]>;
+        valid<T extends string>(...values: T[]): StringSchema<typeof values[number]>;
         valid<T extends string[]>(values: T): StringSchema<typeof values[number]>;
         valid(...values: any[]): this;
         valid(values: any[]): this;
