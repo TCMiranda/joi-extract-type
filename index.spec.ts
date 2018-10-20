@@ -22,25 +22,28 @@ const priority = Joi.number();
 type extractNumber = Joi.extractType<typeof priority>;
 export const extractedNumber: extractNumber = 5;
 
-const user = Joi.object({
+const userAsObject = {
     full_name: full_name.required(),
     short_desc: Joi.string(),
     is_enabled,
     created_at,
     priority
-});
-type extractObject = Joi.extractType<typeof user>;
+};
+const user = Joi.object(userAsObject);
+type extractObject = Joi.extractType<typeof userAsObject>;
+type extractObjectSchema = Joi.extractType<typeof user>;
 export const extractedObject: extractObject = {
     created_at: extractedDate,
-    short_desc: undefined,
     full_name: extractedString,
     is_enabled: extractedBoolean,
     priority: extractedNumber,
 };
+export const extractedObjectSchema: extractObjectSchema = extractedObject;
 
-const roles = Joi.array().items(Joi.string().valid(['admin', 'member', 'guest']));
+
+const roles = Joi.array().items(Joi.string().valid(['admin', 'member', 'guest'])).items(Joi.number());
 type extractArray = Joi.extractType<typeof roles>;
-export const extactedArray: extractArray = ['admin'];
+export const extactedArray: extractArray = ['admin', 2];
 
 const uuid_exp = `[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}`;
 const uuid_pattern = new RegExp(uuid_exp, 'i');
@@ -48,14 +51,14 @@ const uuid = Joi.string().regex(uuid_pattern);
 type extractUuid = Joi.extractType<typeof uuid>;
 export const extractedUuid: extractUuid = '123e4567-e89b-12d3-a456-426655440000';
 
-const apply = Joi.array().items(Joi.object({ id: uuid }));
+const apply = Joi.array().items(Joi.object({ id: uuid.required() }));
 type extractApply = Joi.extractType<typeof apply>;
-const anyApply = [{ id: '3' }, { id: '4' }];
+const anyApply = [{ id: '3' }, { id: undefined }];
 export const extractedApply: extractApply = anyApply;
 
-const rule = Joi.object({ apply });
+const rule = Joi.object().keys({ apply }).keys({ id: uuid.required() });
 type extractRule = Joi.extractType<typeof rule>;
-export const extractedRule: extractRule = { apply: extractedApply };
+export const extractedRule: extractRule = { apply: extractedApply, id: 'string' };
 
 export const jobOperatorRoleSchema = Joi.object({
     id: Joi.string().required(),

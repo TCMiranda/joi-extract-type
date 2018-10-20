@@ -1,10 +1,15 @@
 import "joi";
 export { tuple } from './tuple';
 
+type PickAll<T> = { [P in keyof T]: T[P] };
+
 declare module "joi" {
+
+    type Diff<T, U> = T extends U ? never : T;
 
     // Base types
     type primitiveType = string | number | boolean | Function | Date | undefined | null | void;
+    type thruthyPrimitiveType = NonNullable<primitiveType>;
     type schemaMap = { [key: string]: mappedSchema, };
     type mappedSchema = SchemaLike | mappedSchemaMap;
     type mappedSchemaMap<T extends schemaMap = any> = { [K in keyof T]: T[K]; };
@@ -23,19 +28,30 @@ declare module "joi" {
     export function validate<T, R, S extends mappedSchemaMap>(value: T, schema: SchemaLike,
         callback: (err: ValidationError, value: extendsGuard<T, extractType<S>>) => R): R;
 
+    interface DecoratedExtractedValue<T> {
+        T: T;
+        R: boolean;
+    }
+
+    // interface DecoratedSchema<N extends DecoratedExtractedValue<any>> { }
+
+    // interface X<P extends DecoratedSchema<A>, T = any, N extends DecoratedExtractedValue<T> = any> {
+    //     valid<T extends string>(...values: T[]): P<{ R: N['R'], T: typeof values[number] }>;
+    //     valid<T extends string>(values: T[]): P<{ R: N['R'], T: typeof values[number] }>;
+    // }
+
     /**
      * String: extraction decorated schema
      */
-    export interface StringSchema<N = string, R = false> extends AnySchema {
-        valid<T extends string>(...values: T[]): StringSchema<typeof values[number]>;
-        valid<T extends string>(values: T[]): StringSchema<typeof values[number]>;
+    export interface StringSchema<N extends DecoratedExtractedValue<string> = any> {
+        valid<T extends string>(...values: T[]): StringSchema<{ R: N['R'], T: typeof values[number] }>;
+        valid<T extends string>(values: T[]): StringSchema<{ R: N['R'], T: typeof values[number] }>;
         valid(...values: any[]): this;
         valid(values: any[]): this;
 
-        // TODO: required | optional
-        // required(): StringSchema<N, true>;
-        // exist(): StringSchema<N, true>;
-        // optional(): StringSchema<N, false>;
+        required(): StringSchema<{ R: true, T: N['T'] }>;
+        exist(): StringSchema<{ R: true, T: N['T'] }>;
+        optional(): StringSchema<{ R: false, T: N['T'] }>;
 
         // TODO: default
         // default(value: any, description?: string): this;
@@ -50,20 +66,34 @@ declare module "joi" {
         // when(ref: Schema, options: WhenSchemaOptions): AlternativesSchema;
     }
 
-    export function string<T extends string>(): StringSchema<extractType<T>>;
+    export function string<T extends string>(): StringSchema<{ T: extractType<T>, R: false }>;
+
+    // TOOD: implement DecoratedExtractedValue at:
+    // T extends BooleanSchema
+    // T extends NumberSchema
+    // T extends DateSchema
+    // T extends FunctionSchema
 
     /**
      * Array: extraction decorated schema
      */
-    export interface ArraySchema<N = any> extends AnySchema {
-        items<T extends mappedSchema>(type: T): ArraySchema<extractType<T>>;
+    export interface ArraySchema<N = never> extends AnySchema {
+        items<T extends mappedSchema>(type: T):
+            this extends ArraySchema<infer O>
+            ? ArraySchema<extractType<T> | O>
+            : ArraySchema<extractMap<T>>;
     }
 
     /**
      * Object: extraction decorated schema
      */
-    export interface ObjectSchema<N = any> extends AnySchema {
-        keys<T extends mappedSchemaMap>(schema: T): ObjectSchema<extractMap<N & T>>;
+    export interface ObjectSchema<N = null> extends AnySchema {
+        keys<T extends mappedSchemaMap>(schema: T):
+            this extends ObjectSchema<infer O>
+            ? (O extends null
+                ? ObjectSchema<extractMap<T>>
+                : ObjectSchema<extractMap<T> & O>)
+            : ObjectSchema<extractMap<T>>;
     }
 
     export function object<T extends mappedSchemaMap>(schema: T): ObjectSchema<extractMap<T>>;
@@ -79,7 +109,6 @@ declare module "joi" {
      * Alternatives: extraction decorated schema
      */
     export interface AlternativesSchema<T extends mappedSchema = any> extends AnySchema {
-
         try<T extends mappedSchema[]>(...values: T): AlternativesSchema<extractType<typeof values[number]>>;
         try<T extends mappedSchema[]>(values: T): AlternativesSchema<extractType<typeof values[number]>>;
         try(...types: SchemaLike[]): this;
@@ -96,15 +125,34 @@ declare module "joi" {
     export function alt<T extends mappedSchema[]>(alts: T):
         AlternativesSchema<extractType<typeof alts[number]>>;
 
-    // Extraction
-    // TODO: find required or optional properties:
-    // Partial<T> & PickRequired<T>
-    type extractMap<T> = { [K in keyof T]: extractType<T[K]> };
+
+    // Required | Optional properties engine
+    type FilterVoid<T extends (string | number | symbol), O extends any> = {
+        [K in T extends (string | number | symbol)
+            ? (O[T] extends (null | undefined | void) ? never : T)
+            : never
+        ]: O[K]
+    };
+
+    type MarkRequired<T, B> = {
+        [K in keyof T]: T[K] extends StringSchema<infer D>
+            ? (D['R'] extends B ? T[K] : void)
+            : (B extends false ? T[K] : void)
+    };
+
+    type Required<T> = FilterVoid<keyof T, MarkRequired<T, true>>;
+    type Optional<T> = FilterVoid<keyof T, MarkRequired<T, false>>;
+
+    type extractMap<T> = PickAll<{
+        [K in keyof Optional<T>]?: extractType<T[K]>;
+    } & {
+        [K in keyof Required<T>]: extractType<T[K]>;
+    }>;
 
     type extractOne<T extends mappedSchema> =
         T extends primitiveType ? T :
         T extends BooleanSchema ? boolean :
-        T extends StringSchema<infer O> ? O :
+        T extends StringSchema<infer O> ? O['T'] :
         T extends NumberSchema ? number :
         T extends DateSchema ? Date :
         T extends FunctionSchema<infer O> ? O :
@@ -128,5 +176,14 @@ declare module "joi" {
          * ```
          */
         T extends Array<infer O> ? extractOne<O> :
+
+        /**
+         * Handle Objects as schemas, without Joi.object at the root
+         */
+        T extends { [K: string]: mappedSchema } ? extractMap<T> :
+
+        /**
+         * Default case to handle primitives and schemas
+         */
         extractOne<T>;
 }
