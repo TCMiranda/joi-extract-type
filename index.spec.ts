@@ -1,5 +1,5 @@
 import * as Joi from 'joi';
-import { tuple } from './index';
+import './index';
 
 // Unkown types or AnySchema defaults to type any
 const any_schema = Joi.any();
@@ -38,7 +38,7 @@ export const extractedObject: extractObject = {
     priority: extractedNumber,
 };
 
-const roles = Joi.array().items(Joi.string().valid('admin', 'member', 'guest'));
+const roles = Joi.array().items(Joi.string().valid(['admin', 'member', 'guest']));
 type extractArray = Joi.extractType<typeof roles>;
 export const extactedArray: extractArray = ['admin'];
 
@@ -61,7 +61,7 @@ export const jobOperatorRoleSchema = Joi.object({
     id: Joi.string().required(),
     user_id: Joi.string().required(),
     job_id: Joi.string().required(),
-    role: Joi.string().valid(tuple('recruiter', 'requester')),
+    role: Joi.string().valid('recruiter', 'requester'),
     pipeline_rules: Joi.array().items(rule),
 });
 type extractComplexType = Joi.extractType<typeof jobOperatorRoleSchema>;
@@ -83,7 +83,7 @@ type extractNumberString = Joi.extractType<typeof number_string>;
 export const extractNumberStringNumber: extractNumberString = 2;
 export const extractNumberStringString: extractNumberString = '2';
 
-const date_time1 = Joi.alternatives(Joi.date(), Joi.number(), Joi.string());
+const date_time1 = Joi.alternatives([Joi.date(), Joi.number(), Joi.string()]);
 type extractDateTime1 = Joi.extractType<typeof date_time1>;
 export const extractDateTimeDate1: extractDateTime1 = new Date();
 export const extractDateTimeTime1: extractDateTime1 = +new Date();

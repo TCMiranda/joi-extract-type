@@ -28,7 +28,7 @@ declare module "joi" {
      */
     export interface StringSchema<N = string, R = false> extends AnySchema {
         valid<T extends string>(...values: T[]): StringSchema<typeof values[number]>;
-        valid<T extends string[]>(values: T): StringSchema<typeof values[number]>;
+        valid<T extends string>(values: T[]): StringSchema<typeof values[number]>;
         valid(...values: any[]): this;
         valid(values: any[]): this;
 
@@ -88,8 +88,12 @@ declare module "joi" {
 
     export function alternatives<T extends mappedSchema[]>(...alts: T):
         AlternativesSchema<extractType<typeof alts[number]>>;
+    export function alternatives<T extends mappedSchema[]>(alts: T):
+        AlternativesSchema<extractType<typeof alts[number]>>;
 
     export function alt<T extends mappedSchema[]>(...alts: T):
+        AlternativesSchema<extractType<typeof alts[number]>>;
+    export function alt<T extends mappedSchema[]>(alts: T):
         AlternativesSchema<extractType<typeof alts[number]>>;
 
     // Extraction
