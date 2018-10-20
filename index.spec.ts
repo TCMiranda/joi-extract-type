@@ -50,7 +50,8 @@ export const extractedUuid: extractUuid = '123e4567-e89b-12d3-a456-426655440000'
 
 const apply = Joi.array().items(Joi.object({ id: uuid }));
 type extractApply = Joi.extractType<typeof apply>;
-export const extractedApply: extractApply = [{ id: '3' }, { id: '4' }];
+const anyApply = [{ id: '3' }, { id: '4' }];
+export const extractedApply: extractApply = anyApply;
 
 const rule = Joi.object({ apply });
 type extractRule = Joi.extractType<typeof rule>;
@@ -77,16 +78,16 @@ const createUserSchema = Joi.func<typeof someFunction>();
 type extractFunction = Joi.extractType<typeof createUserSchema>;
 export const extractedFunction: extractFunction = someFunction;
 
-const number_string = Joi.alternatives(Joi.number(), Joi.string());
+const number_string = Joi.alt().try(Joi.number(), Joi.string());
 type extractNumberString = Joi.extractType<typeof number_string>;
 export const extractNumberStringNumber: extractNumberString = 2;
 export const extractNumberStringString: extractNumberString = '2';
 
-const date_time = Joi.alternatives(Joi.date(), Joi.number(), Joi.string());
-type extractDateTime = Joi.extractType<typeof date_time>;
-export const extractDateTimeDate: extractDateTime = new Date();
-export const extractDateTimeTime: extractDateTime = +new Date();
-export const extractDateTimeString: extractDateTime = new Date().toISOString();
+const date_time1 = Joi.alternatives(Joi.date(), Joi.number(), Joi.string());
+type extractDateTime1 = Joi.extractType<typeof date_time1>;
+export const extractDateTimeDate1: extractDateTime1 = new Date();
+export const extractDateTimeTime1: extractDateTime1 = +new Date();
+export const extractDateTimeString1: extractDateTime1 = new Date().toISOString();
 
 const string_array_schema = [
     Joi.string(),
@@ -97,3 +98,21 @@ const string_array_schema = [
 type extractStringArray = Joi.extractType<typeof string_array_schema>;
 export const extractStringArrayString: extractStringArray = 'string';
 export const extractStringArrayArray: extractStringArray = ['string', 2];
+
+// A extends B type guard
+type numberExtendsAny = Joi.extendsGuard<any, extractNumber>;
+export const asNumber: numberExtendsAny = 2;
+
+type stringNotNumber = Joi.extendsGuard<string, extractNumber>;
+export const asString: stringNotNumber = 'string';
+
+// Validation methods
+type priorityValidationResponse = { error: any, value: extractNumber };
+export const validationExtractedNumber1: priorityValidationResponse = Joi.validate(extractedNumber, priority);
+export const validationExtractedNumber2: priorityValidationResponse = Joi.validate(extractedNumber, priority, { });
+
+type strictEnum = 'tag';
+export const validationOverwrittenReturn: strictEnum = Joi.validate(extractedNumber, priority, (err, value: extractNumber) => {
+    if (typeof value === 'number')
+        return 'tag' as 'tag';
+});
