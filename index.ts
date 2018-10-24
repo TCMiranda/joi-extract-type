@@ -68,9 +68,16 @@ declare module "joi" {
 
     export function string<T extends string>(): StringSchema<{ T: extractType<T>, R: false }>;
 
+    export interface NumberSchema<N extends DecoratedExtractedValue<number> = any> {
+        required(): NumberSchema<{ R: true; T: N['T'] }>;
+        exist(): NumberSchema<{ R: true; T: N['T'] }>;
+        optional(): NumberSchema<{ R: false; T: N['T'] }>;
+    }
+
+    export function number<T extends number>(): NumberSchema<{ T: extractType<T>; R: false }>;
+
     // TOOD: implement DecoratedExtractedValue at:
     // T extends BooleanSchema
-    // T extends NumberSchema
     // T extends DateSchema
     // T extends FunctionSchema
 
@@ -137,7 +144,9 @@ declare module "joi" {
     type MarkRequired<T, B> = {
         [K in keyof T]: T[K] extends StringSchema<infer D>
             ? (D['R'] extends B ? T[K] : void)
-            : (B extends false ? T[K] : void)
+            : (T[K] extends NumberSchema<infer D>
+                ? (D['R'] extends B ? T[K] : void)
+                : (B extends false ? T[K] : void))
     };
 
     type Required<T> = FilterVoid<keyof T, MarkRequired<T, true>>;
@@ -153,7 +162,7 @@ declare module "joi" {
         T extends primitiveType ? T :
         T extends BooleanSchema ? boolean :
         T extends StringSchema<infer O> ? O['T'] :
-        T extends NumberSchema ? number :
+        T extends NumberSchema<infer O> ? O['T'] :
         T extends DateSchema ? Date :
         T extends FunctionSchema<infer O> ? O :
 
