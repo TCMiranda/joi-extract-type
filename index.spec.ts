@@ -64,7 +64,7 @@ export const extractedRule: extractRule = { apply: extractedApply, id: 'string' 
 export const jobOperatorRoleSchema = Joi.object({
     id: Joi.string().required(),
     user_id: Joi.string().required(),
-    job_id: Joi.string().required(),
+    job_id: Joi.string(),
     index: Joi.number(),
     parent_index: Joi.number().required(),
     role: Joi.string().valid('recruiter', 'requester'),
