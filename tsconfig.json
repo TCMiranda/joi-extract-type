@@ -5,7 +5,6 @@
     "lib": ["es2015", "es2015.iterable"],
     "module": "commonjs",
     "outDir": "dist",
-    "skipLibCheck": true,
     "strict": true,
     "target": "es5"
   },
