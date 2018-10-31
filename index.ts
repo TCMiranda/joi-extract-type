@@ -142,11 +142,10 @@ declare module "joi" {
     };
 
     type MarkRequired<T, B> = {
-        [K in keyof T]: T[K] extends StringSchema<infer D>
-            ? (D['R'] extends B ? T[K] : void)
-            : (T[K] extends NumberSchema<infer D>
-                ? (D['R'] extends B ? T[K] : void)
-                : (B extends false ? T[K] : void))
+        [K in keyof T]:
+            T[K] extends StringSchema<infer D> ? (D['R'] extends B ? T[K] : void) :
+            T[K] extends NumberSchema<infer D> ? (D['R'] extends B ? T[K] : void) :
+            (B extends false ? T[K] : void)
     };
 
     type Required<T> = FilterVoid<keyof T, MarkRequired<T, true>>;

@@ -40,7 +40,6 @@ export const extractedObject: extractObject = {
 };
 export const extractedObjectSchema: extractObjectSchema = extractedObject;
 
-
 const roles = Joi.array().items(Joi.string().valid(['admin', 'member', 'guest'])).items(Joi.number());
 type extractArray = Joi.extractType<typeof roles>;
 export const extactedArray: extractArray = ['admin', 2];
@@ -64,6 +63,8 @@ export const jobOperatorRoleSchema = Joi.object({
     id: Joi.string().required(),
     user_id: Joi.string().required(),
     job_id: Joi.string().required(),
+    index: Joi.number(),
+    parent_index: Joi.number().required(),
     role: Joi.string().valid('recruiter', 'requester'),
     pipeline_rules: Joi.array().items(rule),
 });
@@ -73,6 +74,7 @@ export const extractedComplexType: extractComplexType = {
     user_id: '102',
     job_id: '52',
     role: 'requester',
+    parent_index: 5,
     pipeline_rules: [extractedRule]
 };
 

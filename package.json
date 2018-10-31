@@ -1,6 +1,6 @@
 {
   "name": "joi-extract-type",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Provides native type extraction from Joi schemas for Typescript",
   "main": "index.ts",
   "scripts": {
@@ -23,7 +23,6 @@
   },
   "homepage": "https://github.com/TCMiranda/joi-extract-type#readme",
   "devDependencies": {
-    "tsc": "^1.20150623.0",
     "typescript": "^3.1.1"
   },
   "peerDependencies": {
