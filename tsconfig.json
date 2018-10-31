@@ -1,16 +1,16 @@
 {
   "compilerOptions": {
+    "declaration": true,
     "esModuleInterop": true,
     "lib": ["es2015", "es2015.iterable"],
     "module": "commonjs",
-    "strict": true,
-    "target": "es5",
     "outDir": "dist",
-    "declaration": true
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "es5"
   },
   "include": [
-      "index.ts",
-      "tuple.ts"
+      "index.ts"
   ],
   "exclude": [
       "node_modules",
