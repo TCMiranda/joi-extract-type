@@ -26,6 +26,7 @@ const userAsObject = {
     full_name: full_name.required(),
     short_desc: Joi.string(),
     is_enabled,
+    has_credentials: Joi.boolean().valid(true).required(),
     created_at,
     priority
 };
@@ -37,6 +38,7 @@ export const extractedObject: extractObject = {
     full_name: extractedString,
     is_enabled: extractedBoolean,
     priority: extractedNumber,
+    has_credentials: true,
 };
 export const extractedObjectSchema: extractObjectSchema = extractedObject;
 
@@ -83,7 +85,7 @@ const createUserSchema = Joi.func<typeof someFunction>();
 type extractFunction = Joi.extractType<typeof createUserSchema>;
 export const extractedFunction: extractFunction = someFunction;
 
-const number_string = Joi.alt().try(Joi.number(), Joi.string());
+const number_string = Joi.alt().try(Joi.number().valid(1, 2, 3), Joi.string());
 type extractNumberString = Joi.extractType<typeof number_string>;
 export const extractNumberStringNumber: extractNumberString = 2;
 export const extractNumberStringString: extractNumberString = '2';
@@ -95,7 +97,7 @@ export const extractDateTimeTime1: extractDateTime1 = +new Date();
 export const extractDateTimeString1: extractDateTime1 = new Date().toISOString();
 
 const string_array_schema = [
-    Joi.string(),
+    Joi.string().default('test' as 'test'),
     Joi.array()
         .items([Joi.string(), Joi.number()])
         .valid('string', 2) // TODO overwrite valid on ArraySchema

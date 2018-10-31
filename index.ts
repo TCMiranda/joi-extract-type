@@ -27,22 +27,30 @@ declare module "joi" {
     export function validate<T, R, S extends mappedSchemaMap>(value: T, schema: SchemaLike,
         callback: (err: ValidationError, value: extendsGuard<T, extractType<S>>) => R): R;
 
+    // TODO: concat
+    // concat(schema: this): this;
+
+    // TODO: when
+    // when(ref: string, options: WhenOptions): AlternativesSchema;
+    // when(ref: Reference, options: WhenOptions): AlternativesSchema;
+    // when(ref: Schema, options: WhenSchemaOptions): AlternativesSchema;
+
+    // TODO: see if .default union makes sense;
+
+    /**
+     * Field requirements interface
+     */
     interface DecoratedExtractedValue<T> {
-        T: T;
-        R: boolean;
+        T: T; // type the schema holds
+        R: boolean; // if this attribute is required when inside an object
     }
-
-    // interface DecoratedSchema<N extends DecoratedExtractedValue<any>> { }
-
-    // interface X<P extends DecoratedSchema<A>, T = any, N extends DecoratedExtractedValue<T> = any> {
-    //     valid<T extends string>(...values: T[]): P<{ R: N['R'], T: typeof values[number] }>;
-    //     valid<T extends string>(values: T[]): P<{ R: N['R'], T: typeof values[number] }>;
-    // }
 
     /**
      * String: extraction decorated schema
      */
     export interface StringSchema<N extends DecoratedExtractedValue<string> = any> {
+        default<T extends string>(value: T, description?: string): StringSchema<{ R: N['R'], T: N['T'] | T }>;
+
         valid<T extends string>(...values: T[]): StringSchema<{ R: N['R'], T: typeof values[number] }>;
         valid<T extends string>(values: T[]): StringSchema<{ R: N['R'], T: typeof values[number] }>;
         valid(...values: any[]): this;
@@ -51,23 +59,21 @@ declare module "joi" {
         required(): StringSchema<{ R: true, T: N['T'] }>;
         exist(): StringSchema<{ R: true, T: N['T'] }>;
         optional(): StringSchema<{ R: false, T: N['T'] }>;
-
-        // TODO: default
-        // default(value: any, description?: string): this;
-        // default(): this;
-
-        // TODO: concat
-        // concat(schema: this): this;
-
-        // TODO: when
-        // when(ref: string, options: WhenOptions): AlternativesSchema;
-        // when(ref: Reference, options: WhenOptions): AlternativesSchema;
-        // when(ref: Schema, options: WhenSchemaOptions): AlternativesSchema;
     }
 
     export function string<T extends string>(): StringSchema<{ T: extractType<T>, R: false }>;
 
+    /**
+     * Number: extraction decorated schema
+     */
     export interface NumberSchema<N extends DecoratedExtractedValue<number> = any> {
+        default<T extends number>(value: T, description?: string): NumberSchema<{ R: N['R'], T: N['T'] | T }>;
+
+        valid<T extends number>(...values: T[]): NumberSchema<{ R: N['R'], T: typeof values[number] }>;
+        valid<T extends number>(values: T[]): NumberSchema<{ R: N['R'], T: typeof values[number] }>;
+        valid(...values: any[]): this;
+        valid(values: any[]): this;
+
         required(): NumberSchema<{ R: true; T: N['T'] }>;
         exist(): NumberSchema<{ R: true; T: N['T'] }>;
         optional(): NumberSchema<{ R: false; T: N['T'] }>;
@@ -75,19 +81,67 @@ declare module "joi" {
 
     export function number<T extends number>(): NumberSchema<{ T: extractType<T>; R: false }>;
 
+    /**
+     * Boolean: extraction decorated schema
+     */
+    export interface BooleanSchema<N extends DecoratedExtractedValue<boolean> = any> {
+        default<T extends boolean>(value: T, description?: string): BooleanSchema<{ R: N['R'], T: N['T'] | T }>;
+
+        valid<T extends boolean>(...values: T[]): BooleanSchema<{ R: N['R'], T: typeof values[number] }>;
+        valid<T extends boolean>(values: T[]): BooleanSchema<{ R: N['R'], T: typeof values[number] }>;
+        valid(...values: any[]): this;
+        valid(values: any[]): this;
+
+        required(): BooleanSchema<{ R: true; T: N['T'] }>;
+        exist(): BooleanSchema<{ R: true; T: N['T'] }>;
+        optional(): BooleanSchema<{ R: false; T: N['T'] }>;
+    }
+
+    /**
+     * Date: extraction decorated schema
+     */
+    export interface DateSchema<N extends DecoratedExtractedValue<Date> = any> {
+        default<T extends Date>(value: T, description?: string): DateSchema<{ R: N['R'], T: N['T'] | T }>;
+
+        valid<T extends Date>(...values: T[]): DateSchema<{ R: N['R'], T: typeof values[number] }>;
+        valid<T extends Date>(values: T[]): DateSchema<{ R: N['R'], T: typeof values[number] }>;
+        valid(...values: any[]): this;
+        valid(values: any[]): this;
+
+        required(): DateSchema<{ R: true; T: N['T'] }>;
+        exist(): DateSchema<{ R: true; T: N['T'] }>;
+        optional(): DateSchema<{ R: false; T: N['T'] }>;
+    }
+
     // TOOD: implement DecoratedExtractedValue at:
-    // T extends BooleanSchema
     // T extends DateSchema
     // T extends FunctionSchema
+
+     /**
+     * Function: extraction decorated schema
+     */
+    export interface FunctionSchema<N extends DecoratedExtractedValue<Function> = any> {
+        required(): FunctionSchema<{ R: true; T: N['T'] }>;
+        exist(): FunctionSchema<{ R: true; T: N['T'] }>;
+        optional(): FunctionSchema<{ R: false; T: N['T'] }>;
+    }
+
+    export function func<T extends Function>(): FunctionSchema<{ T: T; R: false }>;
 
     /**
      * Array: extraction decorated schema
      */
     export interface ArraySchema<N = never> extends AnySchema {
-        items<T extends mappedSchema>(type: T):
+        items<T extends mappedSchema>(type: T): (
             this extends ArraySchema<infer O>
             ? ArraySchema<extractType<T> | O>
-            : ArraySchema<extractMap<T>>;
+            : ArraySchema<extractMap<T>>
+        );
+        // items<T extends mappedSchema>(type: T): (
+        //     this extends ArraySchema<infer O>
+        //     ? ArraySchema<{ T: extractType<typeof type> | O['T'], R: O['R'] }>
+        //     : ArraySchema<{ T: extractMap<typeof type>, R: false }>
+        // );
     }
 
     /**
@@ -105,11 +159,16 @@ declare module "joi" {
     export function object<T extends mappedSchemaMap>(schema: T): ObjectSchema<extractMap<T>>;
 
     /**
-     * Function: extraction decorated schema
+     * Every Schema that implements DecoratedExtractedValue to allow the extraction
      */
-    export interface FunctionSchema<N = any> extends AnySchema { }
-
-    export function func<T extends Function>(): FunctionSchema<T>;
+    type DecoratedPrimitive<T extends DecoratedExtractedValue<any>>
+        = StringSchema<T>
+        | NumberSchema<T>
+        | BooleanSchema<T>
+        | DateSchema<T>
+        | FunctionSchema<T>
+        // | ArraySchema<T>
+        ;
 
     /**
      * Alternatives: extraction decorated schema
@@ -142,8 +201,9 @@ declare module "joi" {
 
     type MarkRequired<T, B> = {
         [K in keyof T]:
-            T[K] extends StringSchema<infer D> ? (D['R'] extends B ? T[K] : void) :
-            T[K] extends NumberSchema<infer D> ? (D['R'] extends B ? T[K] : void) :
+            T[K] extends DecoratedPrimitive<infer D> ? (
+                D['R'] extends B ? T[K] : void
+            ) :
             (B extends false ? T[K] : void)
     };
 
@@ -157,12 +217,13 @@ declare module "joi" {
     }>;
 
     type extractOne<T extends mappedSchema> =
+        /** Primitive types */
         T extends primitiveType ? T :
-        T extends BooleanSchema ? boolean :
+        T extends BooleanSchema<infer O> ? O['T'] :
         T extends StringSchema<infer O> ? O['T'] :
         T extends NumberSchema<infer O> ? O['T'] :
-        T extends DateSchema ? Date :
-        T extends FunctionSchema<infer O> ? O :
+        T extends DateSchema<infer O> ? O['T'] :
+        T extends FunctionSchema<infer O> ? O['T'] :
 
         /** Holds the extracted type */
         T extends ArraySchema<infer O> ? O[] :
