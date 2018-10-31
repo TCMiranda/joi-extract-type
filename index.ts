@@ -97,6 +97,8 @@ declare module "joi" {
         optional(): BooleanSchema<{ R: false; T: N['T'] }>;
     }
 
+    export function boolean<T extends boolean>(): BooleanSchema<{ T: T; R: false }>
+
     /**
      * Date: extraction decorated schema
      */
@@ -112,6 +114,8 @@ declare module "joi" {
         exist(): DateSchema<{ R: true; T: N['T'] }>;
         optional(): DateSchema<{ R: false; T: N['T'] }>;
     }
+
+    export function date<T extends Date>(): DateSchema<{ T: T; R: false }>;
 
     // TOOD: implement DecoratedExtractedValue at:
     // T extends DateSchema
