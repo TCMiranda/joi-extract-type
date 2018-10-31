@@ -17,7 +17,7 @@ This library enhances Joi interfaces to provides an utility to infer the type fr
 **Limitation**
 
 * Joi is probably a superset of typescript in terms of validation, branching, conditional types, etc. This library is probably suitable for most simples cases, but wont ever prevent every validation error to occour with just static analisys.
-* This is experimental and a work in progress.
+* This is ~experimental~ and a work in progress. Although I use it in some projects and works for 99% of my schemas.
 
 
 ## Usage
