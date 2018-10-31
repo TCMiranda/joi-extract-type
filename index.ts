@@ -1,5 +1,4 @@
 import "joi";
-export { tuple } from './tuple';
 
 type PickAll<T> = { [P in keyof T]: T[P] };
 
