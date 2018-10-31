@@ -20,6 +20,18 @@ This library enhances Joi interfaces to provides an utility to infer the type fr
 * This is ~experimental~ and a work in progress. Although I use it in some projects and works for 99% of my schemas.
 
 
+## Installation
+
+```
+npm i --save joi-extract-type
+```
+**Built for typescript@^3**
+
+For typescript 2.9 support checkout branch /typescript@2 or install with:
+```
+npm i --save joi-extract-type@ts2-1
+```
+
 ## Usage
 
 Import the library and patch Joi's typings:
