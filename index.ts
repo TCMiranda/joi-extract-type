@@ -27,19 +27,55 @@ declare module "joi" {
      * Every Schema that implements the Box to allow the extraction
      */
     type BoxedPrimitive<T extends Box<any, any> = any>
-        = StringSchema<T>
-        | NumberSchema<T>
+        =
+        // StringSchema<T>
+        // | NumberSchema<T>
         | BooleanSchema<T>
         | DateSchema<T>
         | FunctionSchema<T>
         // | ArraySchema<T>
         ;
 
+    interface BoxedSchema<S, Box> {
+        S: S;
+        B: Box;
+    }
+
+    interface W<S extends SchemaLike, T, R extends boolean> extends Any<W<S, T, R>> {
+        S: S;
+        T: T;
+        R: R;
+    }
+
+    type WT<B, nT> =
+        B extends Box<infer oT, infer oR> ? Box<nT, oR> : B;
+    type WR<B, nR extends boolean> =
+        B extends Box<infer oT, infer oR> ? Box<oT, nR> : B;
+
+    export interface AnyBoxed {}
+
+    export interface Any<B extends W<SchemaLike, any, boolean>> extends AnyBoxed {
+        default<T extends B['T']>(value: T, description?: string): W<B['S'], B['T'] | B, B['R']>;
+
+        valid<T extends B['T']>(...values: T[]): W<B['S'], typeof values[number], B['R']>;
+        valid<T extends string>(values: T[]): W<B['S'], typeof values[number], B['R']>;
+
+        required(): W<B['S'], B['T'], true>;
+        exist(): W<B['S'], B['T'], false>;
+        optional(): W<B['S'], B['T'], false>;
+    }
+
+    export interface StringSchema extends Any<W<StringSchema, string, false>> { }
+    export function string(): W<StringSchema, string, false>;
+
+    export interface NumberSchema extends Any<W<NumberSchema, number, boolean>> { }
+    export function number(): W<NumberSchema, number, boolean>;
+
     // Base types
     type primitiveType = string | number | boolean | Function | Date | undefined | null | void;
     type thruthyPrimitiveType = NonNullable<primitiveType>;
     type schemaMap = { [key: string]: mappedSchema, };
-    type mappedSchema = SchemaLike | BoxedPrimitive | mappedSchemaMap;
+    type mappedSchema = SchemaLike | BoxedPrimitive | mappedSchemaMap | AnyBoxed;
     type mappedSchemaMap<T extends schemaMap = any> = { [K in keyof T]: T[K]; };
 
     export type extendsGuard<T, S> = S extends T ? S : T;
@@ -69,48 +105,48 @@ declare module "joi" {
     /**
      * String: extraction decorated schema
      */
-    export interface StringSchema<N extends Box<string, boolean> = any> {
-        default(): this;
-        default(value: any, description?: string): this;
-        default<T extends string>(value: T, description?: string): StringSchema<BoxType<N, N['T'] | T>>;
+    // export interface StringSchema<N extends Box<string, boolean> = any> {
+    //     default(): this;
+    //     default(value: any, description?: string): this;
+    //     default<T extends string>(value: T, description?: string): StringSchema<BoxType<N, N['T'] | T>>;
 
-        valid<T extends string>(...values: T[]): StringSchema<BoxType<N, typeof values[number]>>;
-        valid<T extends string>(values: T[]): StringSchema<BoxType<N, typeof values[number]>>;
-        valid(...values: any[]): this;
-        valid(values: any[]): this;
+    //     valid<T extends string>(...values: T[]): StringSchema<BoxType<N, typeof values[number]>>;
+    //     valid<T extends string>(values: T[]): StringSchema<BoxType<N, typeof values[number]>>;
+    //     valid(...values: any[]): this;
+    //     valid(values: any[]): this;
 
-        required(): StringSchema<BoxReq<N, true>>;
-        required(): this;
-        exist(): StringSchema<BoxReq<N, true>>;
-        exist(): this;
-        optional(): StringSchema<BoxReq<N, false>>;
-        optional(): this;
-    }
+    //     required(): StringSchema<BoxReq<N, true>>;
+    //     required(): this;
+    //     exist(): StringSchema<BoxReq<N, true>>;
+    //     exist(): this;
+    //     optional(): StringSchema<BoxReq<N, false>>;
+    //     optional(): this;
+    // }
 
-    export function string<T extends string>(): StringSchema<{ T: extractType<T>, R: false }>;
+    // export function string<T extends string>(): StringSchema<Box<T, false>>;
 
     /**
      * Number: extraction decorated schema
      */
-    export interface NumberSchema<N extends Box<number, boolean> = any> {
-        default(): this;
-        default(value: any, description?: string): this;
-        default<T extends number>(value: T, description?: string): NumberSchema<BoxType<N, N['T'] | T>>;
+    // export interface NumberSchema<N extends Box<number, boolean> = any> {
+    //     default(): this;
+    //     default(value: any, description?: string): this;
+    //     default<T extends number>(value: T, description?: string): NumberSchema<BoxType<N, N['T'] | T>>;
 
-        valid<T extends number>(...values: T[]): NumberSchema<BoxType<N, typeof values[number]>>;
-        valid<T extends number>(values: T[]): NumberSchema<BoxType<N, typeof values[number]>>;
-        valid(...values: any[]): this;
-        valid(values: any[]): this;
+    //     valid<T extends number>(...values: T[]): NumberSchema<BoxType<N, typeof values[number]>>;
+    //     valid<T extends number>(values: T[]): NumberSchema<BoxType<N, typeof values[number]>>;
+    //     valid(...values: any[]): this;
+    //     valid(values: any[]): this;
 
-        required(): NumberSchema<BoxReq<N, true>>;
-        required(): this;
-        exist(): NumberSchema<BoxReq<N, true>>;
-        exist(): this;
-        optional(): NumberSchema<BoxReq<N, false>>;
-        optional(): this;
-    }
+    //     required(): NumberSchema<BoxReq<N, true>>;
+    //     required(): this;
+    //     exist(): NumberSchema<BoxReq<N, true>>;
+    //     exist(): this;
+    //     optional(): NumberSchema<BoxReq<N, false>>;
+    //     optional(): this;
+    // }
 
-    export function number<T extends number>(): NumberSchema<Box<extractType<T>, false>>;
+    // export function number<T extends number>(): NumberSchema<Box<T, false>>;
 
     /**
      * Boolean: extraction decorated schema
@@ -252,12 +288,15 @@ declare module "joi" {
         [K in keyof Required<T>]: extractType<T[K]>;
     }>;
 
+    type extractW<O> = O extends W<infer S, infer T, infer R> ? T : 'W';
+
     type extractOne<T extends mappedSchema> =
+
         /** Primitive types */
         T extends primitiveType ? T :
         T extends BooleanSchema<infer O> ? O['T'] :
-        T extends StringSchema<infer O> ? O['T'] :
-        T extends NumberSchema<infer O> ? O['T'] :
+        T extends StringSchema ? string :
+        T extends NumberSchema ? number :
         T extends DateSchema<infer O> ? O['T'] :
         T extends FunctionSchema<infer O> ? O['T'] :
 
@@ -268,6 +307,11 @@ declare module "joi" {
 
         /** Supports Joi.alternatives(Schema1, schema2, ...5) */
         T extends AlternativesSchema<infer O> ? O :
+
+        T extends W<any, any, any> ? extractW<T> :
+        T extends Any<infer O> ? extractW<O> :
+        // T extends String<infer O> ? extractW<O> :
+
         any;
 
     export type extractType<T extends mappedSchema> =

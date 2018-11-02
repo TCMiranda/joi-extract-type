@@ -1,6 +1,12 @@
 import * as Joi from 'joi';
 import './index';
 
+const xs = {
+    s: Joi.string().valid('a', 'b'),
+    n: Joi.number(),
+};
+type xt = Joi.extractType<typeof xs>;
+
 // Unkown types or AnySchema defaults to type any
 const any_schema = Joi.any();
 type extractAny = Joi.extractType<typeof any_schema>;
