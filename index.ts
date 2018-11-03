@@ -41,7 +41,7 @@ declare module "joi" {
         B: Box;
     }
 
-    interface W<S extends SchemaLike, T, R extends boolean> extends Any<W<S, T, R>> {
+    interface W<S extends SchemaLike, T, R extends boolean> /*extends Any<W<S, T, R>>*/ {
         S: S;
         T: T;
         R: R;
@@ -56,20 +56,27 @@ declare module "joi" {
 
     export interface Any<B extends W<SchemaLike, any, boolean>> extends AnyBoxed {
         default<T extends B['T']>(value: T, description?: string): W<B['S'], B['T'] | B, B['R']>;
+        default(value: any, description?: string): this;
+        default(): this;
 
-        valid<T extends B['T']>(...values: T[]): W<B['S'], typeof values[number], B['R']>;
-        valid<T extends string>(values: T[]): W<B['S'], typeof values[number], B['R']>;
+        valid<T extends B['T']>(...values: T[]): W<B['S'], typeof values[number], B['R']> & B['S'];
+        valid<T extends string>(values: T[]): W<B['S'], typeof values[number], B['R']> & B['S'];
+        valid(...values: any[]): this;
+        valid(values: any[]): this;
 
-        required(): W<B['S'], B['T'], true>;
-        exist(): W<B['S'], B['T'], false>;
-        optional(): W<B['S'], B['T'], false>;
+        required(): W<B['S'], B['T'], true> & B['S'];
+        required(): this;
+        exist(): W<B['S'], B['T'], false> & B['S'];
+        exist(): this;
+        optional(): W<B['S'], B['T'], false> & B['S'];
+        optional(): this;
     }
 
     export interface StringSchema extends Any<W<StringSchema, string, false>> { }
-    export function string(): W<StringSchema, string, false>;
+    export function string(): StringSchema & W<StringSchema, string, false>;
 
-    export interface NumberSchema extends Any<W<NumberSchema, number, boolean>> { }
-    export function number(): W<NumberSchema, number, boolean>;
+    export interface NumberSchema extends Any<W<NumberSchema, number, false>> { }
+    export function number(): NumberSchema & W<NumberSchema, number, false>;
 
     // Base types
     type primitiveType = string | number | boolean | Function | Date | undefined | null | void;
@@ -273,6 +280,9 @@ declare module "joi" {
 
     type MarkRequired<T, B> = {
         [K in keyof T]:
+            T[K] extends W<infer S, infer Y, infer R> ? (
+                R extends B ? T[K] : void
+            ) :
             T[K] extends BoxedPrimitive<infer D> ? (
                 D['R'] extends B ? T[K] : void
             ) :
