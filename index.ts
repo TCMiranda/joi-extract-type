@@ -20,6 +20,9 @@ declare module "joi" {
 
     type BoxType<B, nT> =
         B extends Box<infer oT, infer oR> ? Box<nT, oR> : B;
+    type BoxUnion<B, nT> =
+        B extends Box<infer oT, infer oR> ? Box<(oT | nT), oR> : B;
+
     type BoxReq<B, nR extends boolean> =
         B extends Box<infer oT, infer oR> ? Box<oT, nR> : B;
 
@@ -32,7 +35,7 @@ declare module "joi" {
         | BooleanSchema<T>
         | DateSchema<T>
         | FunctionSchema<T>
-        // | ArraySchema<T>
+        | ArraySchema<T>
         ;
 
     // Base types
@@ -179,18 +182,23 @@ declare module "joi" {
     /**
      * Array: extraction decorated schema
      */
-    export interface ArraySchema<N = never> extends AnySchema {
-        items<T extends mappedSchema>(type: T): (
+    export interface ArraySchema<N = null> {
+        items<T extends mappedSchema>(type: T):
             this extends ArraySchema<infer O>
-            ? ArraySchema<extractType<T> | O>
-            : ArraySchema<extractMap<T>>
-        );
-        // items<T extends mappedSchema>(type: T): (
-        //     this extends ArraySchema<infer O>
-        //     ? ArraySchema<{ T: extractType<typeof type> | O['T'], R: O['R'] }>
-        //     : ArraySchema<{ T: extractMap<typeof type>, R: false }>
-        // );
+            ? (O extends Box<infer oT, infer oR>
+                ? ArraySchema<BoxType<O, oT | extractType<T>>>
+                : ArraySchema<Box<extractType<T>, false>>)
+            : ArraySchema<Box<extractType<T>, false>>;
+
+        required(): ArraySchema<BoxReq<N, true>>;
+        required(): this;
+        exist(): ArraySchema<BoxReq<N, true>>;
+        exist(): this;
+        optional(): ArraySchema<BoxReq<N, false>>;
+        optional(): this;
     }
+
+    export function array(): ArraySchema<Box<never, false>>;
 
     /**
      * Object: extraction decorated schema
@@ -202,6 +210,15 @@ declare module "joi" {
                 ? ObjectSchema<extractMap<T>>
                 : ObjectSchema<extractMap<T> & O>)
             : ObjectSchema<extractMap<T>>;
+
+        pattern<T extends mappedSchema>(pattern: RegExp | SchemaLike, schema: T):
+            this extends ObjectSchema<infer O>
+            ? (O extends null
+                ? ObjectSchema<extractMap<{ [key: string]: T }>>
+                : ObjectSchema<extractMap<{ [key: string]: T }> | O>)
+            : ObjectSchema<extractMap<{ [key: string]: T }>>;
+
+        pattern(pattern: RegExp | SchemaLike, schema: SchemaLike): this;
     }
 
     export function object<T extends mappedSchemaMap>(schema: T): ObjectSchema<extractMap<T>>;
@@ -252,22 +269,27 @@ declare module "joi" {
         [K in keyof Required<T>]: extractType<T[K]>;
     }>;
 
+    type maybeExtractBox<T> =
+        T extends Box<infer O, infer R> ? O :
+        T;
+
     type extractOne<T extends mappedSchema> =
         /** Primitive types */
         T extends primitiveType ? T :
-        T extends BooleanSchema<infer O> ? O['T'] :
-        T extends StringSchema<infer O> ? O['T'] :
-        T extends NumberSchema<infer O> ? O['T'] :
-        T extends DateSchema<infer O> ? O['T'] :
-        T extends FunctionSchema<infer O> ? O['T'] :
+
+        T extends BooleanSchema<infer O> ? maybeExtractBox<O> :
+        T extends StringSchema<infer O> ? maybeExtractBox<O> :
+        T extends NumberSchema<infer O> ? maybeExtractBox<O> :
+        T extends DateSchema<infer O> ? maybeExtractBox<O> :
+        T extends FunctionSchema<infer O> ? maybeExtractBox<O> :
 
         /** Holds the extracted type */
-        T extends ArraySchema<infer O> ? O[] :
-        T extends ObjectSchema<infer O> ? O :
-        T extends mappedSchemaMap<infer O> ? O :
+        T extends ArraySchema<infer O> ? maybeExtractBox<O>[] :
+        T extends ObjectSchema<infer O> ? maybeExtractBox<O> :
+        T extends mappedSchemaMap<infer O> ? maybeExtractBox<O> :
 
         /** Supports Joi.alternatives(Schema1, schema2, ...5) */
-        T extends AlternativesSchema<infer O> ? O :
+        T extends AlternativesSchema<infer O> ? maybeExtractBox<O> :
         any;
 
     export type extractType<T extends mappedSchema> =

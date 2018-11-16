@@ -57,9 +57,19 @@ type extractApply = Joi.extractType<typeof apply>;
 const anyApply = [{ id: '3' }, { id: undefined }];
 export const extractedApply: extractApply = anyApply;
 
-const rule = Joi.object().keys({ apply }).keys({ id: uuid.required() });
+const rule_flat = Joi.array()
+    .items(Joi.string())
+    .items(Joi.object({ id: uuid.required() }));
+type extractRuleFlat = Joi.extractType<typeof rule_flat>;
+export const extractedRuleFlat: extractRuleFlat = [{ id: 'string' }, 'test'];
+
+const rule = Joi.object().keys({ apply, id: uuid.required() });
 type extractRule = Joi.extractType<typeof rule>;
 export const extractedRule: extractRule = { apply: extractedApply, id: 'string' };
+
+export const ruleMap = Joi.object().pattern(/\w+/, rule);
+type extractRuleMap = Joi.extractType<typeof ruleMap>;
+export const extractedRuleMap: extractRuleMap = { somekey: extractedRule };
 
 export const jobOperatorRoleSchema = Joi.object({
     id: Joi.string().required(),
@@ -68,7 +78,7 @@ export const jobOperatorRoleSchema = Joi.object({
     index: Joi.number(),
     parent_index: Joi.number().required(),
     role: Joi.string().valid('recruiter', 'requester'),
-    pipeline_rules: Joi.array().items(rule),
+    pipeline_rules: Joi.array().items(rule).required(),
 });
 type extractComplexType = Joi.extractType<typeof jobOperatorRoleSchema>;
 export const extractedComplexType: extractComplexType = {
