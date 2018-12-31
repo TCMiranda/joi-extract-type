@@ -1,3 +1,5 @@
+/** @format */
+
 import * as Joi from 'joi';
 import './index';
 
@@ -23,26 +25,30 @@ type extractNumber = Joi.extractType<typeof priority>;
 export const extractedNumber: extractNumber = 5;
 
 const userAsObject = {
-    full_name: full_name.required(),
-    short_desc: Joi.string(),
-    is_enabled,
-    has_credentials: Joi.boolean().valid(true).required(),
-    created_at,
-    priority
+  full_name: full_name.required(),
+  short_desc: Joi.string(),
+  is_enabled,
+  has_credentials: Joi.boolean()
+    .valid(true)
+    .required(),
+  created_at,
+  priority,
 };
 const user = Joi.object(userAsObject);
 type extractObject = Joi.extractType<typeof userAsObject>;
 type extractObjectSchema = Joi.extractType<typeof user>;
 export const extractedObject: extractObject = {
-    created_at: extractedDate,
-    full_name: extractedString,
-    is_enabled: extractedBoolean,
-    priority: extractedNumber,
-    has_credentials: true,
+  created_at: extractedDate,
+  full_name: extractedString,
+  is_enabled: extractedBoolean,
+  priority: extractedNumber,
+  has_credentials: true,
 };
 export const extractedObjectSchema: extractObjectSchema = extractedObject;
 
-const roles = Joi.array().items(Joi.string().valid(['admin', 'member', 'guest'])).items(Joi.number());
+const roles = Joi.array()
+  .items(Joi.string().valid(['admin', 'member', 'guest']))
+  .items(Joi.number());
 type extractArray = Joi.extractType<typeof roles>;
 export const extactedArray: extractArray = ['admin', 2];
 
@@ -58,39 +64,46 @@ const anyApply = [{ id: '3' }, { id: undefined }];
 export const extractedApply: extractApply = anyApply;
 
 const rule_flat = Joi.array()
-    .items(Joi.string())
-    .items(Joi.object({ id: uuid.required() }));
+  .items(Joi.string())
+  .items(Joi.object({ id: uuid.required() }));
 type extractRuleFlat = Joi.extractType<typeof rule_flat>;
 export const extractedRuleFlat: extractRuleFlat = [{ id: 'string' }, 'test'];
 
 const rule = Joi.object().keys({ apply, id: uuid.required() });
 type extractRule = Joi.extractType<typeof rule>;
-export const extractedRule: extractRule = { apply: extractedApply, id: 'string' };
+export const extractedRule: extractRule = {
+  apply: extractedApply,
+  id: 'string',
+};
 
 export const ruleMap = Joi.object().pattern(/\w+/, rule);
 type extractRuleMap = Joi.extractType<typeof ruleMap>;
 export const extractedRuleMap: extractRuleMap = { somekey: extractedRule };
 
 export const jobOperatorRoleSchema = Joi.object({
-    id: Joi.string().required(),
-    user_id: Joi.string().required(),
-    job_id: Joi.string(),
-    index: Joi.number(),
-    parent_index: Joi.number().required(),
-    role: Joi.string().valid('recruiter', 'requester'),
-    pipeline_rules: Joi.array().items(rule).required(),
+  id: Joi.string().required(),
+  user_id: Joi.string().required(),
+  job_id: Joi.string(),
+  index: Joi.number(),
+  parent_index: Joi.number().required(),
+  role: Joi.string().valid('recruiter', 'requester'),
+  pipeline_rules: Joi.array()
+    .items(rule)
+    .required(),
 });
 type extractComplexType = Joi.extractType<typeof jobOperatorRoleSchema>;
 export const extractedComplexType: extractComplexType = {
-    id: '2015',
-    user_id: '102',
-    job_id: '52',
-    role: 'requester',
-    parent_index: 5,
-    pipeline_rules: [extractedRule]
+  id: '2015',
+  user_id: '102',
+  job_id: '52',
+  role: 'requester',
+  parent_index: 5,
+  pipeline_rules: [extractedRule],
 };
 
-function someFunction() { return someFunction; }
+function someFunction() {
+  return someFunction;
+}
 const createUserSchema = Joi.func<typeof someFunction>();
 type extractFunction = Joi.extractType<typeof createUserSchema>;
 export const extractedFunction: extractFunction = someFunction;
@@ -107,10 +120,10 @@ export const extractDateTimeTime1: extractDateTime1 = +new Date();
 export const extractDateTimeString1: extractDateTime1 = new Date().toISOString();
 
 const string_array_schema = [
-    Joi.string().default('test' as 'test'),
-    Joi.array()
-        .items([Joi.string(), Joi.number()])
-        .valid('string', 2) // TODO overwrite valid on ArraySchema
+  Joi.string().default('test' as 'test'),
+  Joi.array()
+    .items([Joi.string(), Joi.number()])
+    .valid('string', 2), // TODO overwrite valid on ArraySchema
 ];
 type extractStringArray = Joi.extractType<typeof string_array_schema>;
 export const extractStringArrayString: extractStringArray = 'string';
@@ -124,12 +137,22 @@ type stringNotNumber = Joi.extendsGuard<string, extractNumber>;
 export const asString: stringNotNumber = 'string';
 
 // Validation methods
-type priorityValidationResponse = { error: any, value: extractNumber };
-export const validationExtractedNumber1: priorityValidationResponse = Joi.validate(extractedNumber, priority);
-export const validationExtractedNumber2: priorityValidationResponse = Joi.validate(extractedNumber, priority, { });
+type priorityValidationResponse = { error: any; value: extractNumber };
+export const validationExtractedNumber1: priorityValidationResponse = Joi.validate(
+  extractedNumber,
+  priority
+);
+export const validationExtractedNumber2: priorityValidationResponse = Joi.validate(
+  extractedNumber,
+  priority,
+  {}
+);
 
 type strictEnum = 'tag';
-export const validationOverwrittenReturn: strictEnum = Joi.validate(extractedNumber, priority, (err, value: extractNumber) => {
-    if (typeof value === 'number')
-        return 'tag' as 'tag';
-});
+export const validationOverwrittenReturn: strictEnum = Joi.validate(
+  extractedNumber,
+  priority,
+  (err, value: extractNumber) => {
+    if (typeof value === 'number') return 'tag' as 'tag';
+  }
+);
