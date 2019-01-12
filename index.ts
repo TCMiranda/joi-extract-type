@@ -33,7 +33,8 @@ declare module 'joi' {
     | BooleanSchema<T>
     | DateSchema<T>
     | FunctionSchema<T>
-    | ArraySchema<T>;
+    | ArraySchema<T>
+    | AlternativesSchema<T>;
 
   // Base types
   type primitiveType = string | number | boolean | Function | Date | undefined | null | void;
@@ -241,30 +242,63 @@ declare module 'joi' {
   /**
    * Alternatives: extraction decorated schema
    */
-  export interface AlternativesSchema<T = any> extends AnySchema {
+  export interface AlternativesSchema<N = any> extends AnySchema {
     try<T extends mappedSchema[]>(
       ...values: T
-    ): AlternativesSchema<extractType<typeof values[number]>>;
+    ): this extends AlternativesSchema<infer O>
+      ? (O extends Box<infer oT, infer oR>
+          ? AlternativesSchema<BoxType<O, oT | extractType<T>>>
+          : AlternativesSchema<Box<extractType<T>, false>>)
+      : AlternativesSchema<Box<extractType<T>, false>>;
+
     try<T extends mappedSchema[]>(
       values: T
-    ): AlternativesSchema<extractType<typeof values[number]>>;
+    ): this extends AlternativesSchema<infer O>
+      ? (O extends Box<infer oT, infer oR>
+          ? AlternativesSchema<BoxType<O, oT | extractType<T>>>
+          : AlternativesSchema<Box<extractType<T>, false>>)
+      : AlternativesSchema<Box<extractType<T>, false>>;
+
     try(...types: SchemaLike[]): this;
     try(types: SchemaLike[]): this;
+
+    required(): AlternativesSchema<BoxReq<N, true>>;
+    required(): this;
+    exist(): AlternativesSchema<BoxReq<N, true>>;
+    exist(): this;
+    optional(): AlternativesSchema<BoxReq<N, false>>;
+    optional(): this;
+
+    when<
+      R,
+      T1 extends mappedSchema,
+      T2 extends mappedSchema,
+      T extends { then: T1; otherwise: T2 }
+    >(
+      ref: R,
+      defs: T
+    ): this extends AlternativesSchema<infer O>
+      ? (O extends Box<infer oT, infer oR>
+          ? AlternativesSchema<
+              BoxType<O, oT | extractType<T['then']> | extractType<T['otherwise']>>
+            >
+          : AlternativesSchema<Box<extractType<T['then']> | extractType<T['otherwise']>, false>>)
+      : AlternativesSchema<Box<extractType<T['then']> | extractType<T['otherwise']>, false>>;
   }
 
   export function alternatives<T extends mappedSchema[]>(
     ...alts: T
-  ): AlternativesSchema<extractType<typeof alts[number]>>;
+  ): AlternativesSchema<Box<extractType<typeof alts[number]>, false>>;
   export function alternatives<T extends mappedSchema[]>(
     alts: T
-  ): AlternativesSchema<extractType<typeof alts[number]>>;
+  ): AlternativesSchema<Box<extractType<typeof alts[number]>, false>>;
 
   export function alt<T extends mappedSchema[]>(
     ...alts: T
-  ): AlternativesSchema<extractType<typeof alts[number]>>;
+  ): AlternativesSchema<Box<extractType<typeof alts[number]>, false>>;
   export function alt<T extends mappedSchema[]>(
     alts: T
-  ): AlternativesSchema<extractType<typeof alts[number]>>;
+  ): AlternativesSchema<Box<extractType<typeof alts[number]>, false>>;
 
   // Required | Optional properties engine
   type FilterVoid<T extends string | number | symbol, O extends any> = {

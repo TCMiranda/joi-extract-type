@@ -119,6 +119,19 @@ export const extractDateTimeDate1: extractDateTime1 = new Date();
 export const extractDateTimeTime1: extractDateTime1 = +new Date();
 export const extractDateTimeString1: extractDateTime1 = new Date().toISOString();
 
+const when = Joi.alt().when('x', { is: 'a', then: Joi.string(), otherwise: Joi.number() });
+type extractedWhen = Joi.extractType<typeof when>;
+export const extractWhen1: extractedWhen = 2;
+export const extractWhen2: extractedWhen = '2';
+
+const required_alt = Joi.object({
+  start_date: date_time1.required(),
+  end_date: date_time1,
+  value: when.required(),
+});
+type extractedRequiredAlt = Joi.extractType<typeof required_alt>;
+export const extractRequiredAlt: extractedRequiredAlt = { start_date: new Date(), value: '2' };
+
 const string_array_schema = [
   Joi.string().default('test' as 'test'),
   Joi.array()
