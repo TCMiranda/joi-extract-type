@@ -160,6 +160,8 @@ export const validationExtractedNumber2: priorityValidationResponse = Joi.valida
   priority,
   {}
 );
+export const validatedNumber: number =
+  validationExtractedNumber2.value || validationExtractedNumber1.value;
 
 type strictEnum = 'tag';
 export const validationOverwrittenReturn: strictEnum = Joi.validate(

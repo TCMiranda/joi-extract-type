@@ -55,18 +55,18 @@ declare module 'joi' {
   ): ValidationResult<extendsGuard<T, extractType<S>>>;
   export function validate<T, S extends mappedSchemaMap>(
     value: T,
-    schema: SchemaLike,
+    schema: S,
     options: ValidationOptions
   ): ValidationResult<extendsGuard<T, extractType<S>>>;
   export function validate<T, R, S extends mappedSchemaMap>(
     value: T,
-    schema: SchemaLike,
+    schema: S,
     options: ValidationOptions,
     callback: (err: ValidationError, value: extendsGuard<T, extractType<S>>) => R
   ): R;
   export function validate<T, R, S extends mappedSchemaMap>(
     value: T,
-    schema: SchemaLike,
+    schema: S,
     callback: (err: ValidationError, value: extendsGuard<T, extractType<S>>) => R
   ): R;
 
