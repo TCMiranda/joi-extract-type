@@ -34,6 +34,7 @@ declare module 'joi' {
     | DateSchema<T>
     | FunctionSchema<T>
     | ArraySchema<T>
+    | ObjectSchema<T>
     | AlternativesSchema<T>;
 
   // Base types
@@ -222,22 +223,48 @@ declare module 'joi' {
     keys<T extends mappedSchemaMap>(
       schema: T
     ): this extends ObjectSchema<infer O>
-      ? (O extends null ? ObjectSchema<extractMap<T>> : ObjectSchema<extractMap<T> & O>)
-      : ObjectSchema<extractMap<T>>;
+      ? (O extends Box<infer oT, infer oR>
+          ? ObjectSchema<BoxType<O, oT & extractMap<T>>>
+          : ObjectSchema<Box<extractMap<T>, false>>)
+      : ObjectSchema<Box<extractMap<T>, false>>;
 
-    pattern<T extends mappedSchema>(
-      pattern: RegExp | SchemaLike,
+    pattern<S extends StringSchema, T extends mappedSchema>(
+      pattern: S,
       schema: T
     ): this extends ObjectSchema<infer O>
-      ? (O extends null
-          ? ObjectSchema<extractMap<{ [key: string]: T }>>
-          : ObjectSchema<extractMap<{ [key: string]: T }> | O>)
-      : ObjectSchema<extractMap<{ [key: string]: T }>>;
+      ? (O extends Box<infer oT, infer oR>
+          ? ObjectSchema<BoxType<O, oT | extractMap<{ [key in extractType<S>]: T }>>>
+          : ObjectSchema<Box<extractMap<{ [key in extractType<S>]: T }>, false>>)
+      : ObjectSchema<Box<extractMap<{ [key in extractType<S>]: T }>, false>>;
+
+    pattern<T extends mappedSchema>(
+      pattern: RegExp,
+      schema: T
+    ): this extends ObjectSchema<infer O>
+      ? (O extends Box<infer oT, infer oR>
+          ? ObjectSchema<BoxType<O, oT | extractMap<{ [key: string]: T }>>>
+          : ObjectSchema<Box<extractMap<{ [key: string]: T }>, false>>)
+      : ObjectSchema<Box<extractMap<{ [key: string]: T }>, false>>;
+
+    // this extends ObjectSchema<infer O>
+    //   ? (O extends null
+    //       ? ObjectSchema<extractMap<{ [key: string]: T }>>
+    //       : ObjectSchema<extractMap<{ [key: string]: T }> | O>)
+    //   : ObjectSchema<extractMap<{ [key: string]: T }>>;
 
     pattern(pattern: RegExp | SchemaLike, schema: SchemaLike): this;
+
+    required(): ObjectSchema<BoxReq<N, true>>;
+    required(): this;
+    exist(): ObjectSchema<BoxReq<N, true>>;
+    exist(): this;
+    optional(): ObjectSchema<BoxReq<N, false>>;
+    optional(): this;
   }
 
-  export function object<T extends mappedSchemaMap>(schema: T): ObjectSchema<extractMap<T>>;
+  export function object<T extends mappedSchemaMap>(
+    schema: T
+  ): ObjectSchema<Box<extractMap<T>, false>>;
 
   /**
    * Alternatives: extraction decorated schema

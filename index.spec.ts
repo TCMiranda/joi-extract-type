@@ -124,13 +124,35 @@ type extractedWhen = Joi.extractType<typeof when>;
 export const extractWhen1: extractedWhen = 2;
 export const extractWhen2: extractedWhen = '2';
 
-const required_alt = Joi.object({
-  start_date: date_time1.required(),
-  end_date: date_time1,
-  value: when.required(),
-});
+const required_alt = {
+  required: Joi.object({
+    start_date: date_time1.required(),
+    end_date: date_time1,
+    value: when.required(),
+  }).required(),
+};
 type extractedRequiredAlt = Joi.extractType<typeof required_alt>;
-export const extractRequiredAlt: extractedRequiredAlt = { start_date: new Date(), value: '2' };
+export const extractRequiredAlt: extractedRequiredAlt = {
+  required: { start_date: new Date(), value: '2' },
+};
+
+const required_alt_augmented = Joi.object(required_alt).keys({
+  required2: Joi.object({
+    value: Joi.number(),
+  })
+    .required()
+    .pattern(/\w+/, Joi.number())
+    .pattern(Joi.string(), Joi.number())
+    .pattern(Joi.string().valid('pattern_key'), Joi.number()),
+});
+type extractedRequiredAltAugmented = Joi.extractType<typeof required_alt_augmented>;
+export const extractRequiredAltAugmented: extractedRequiredAltAugmented = {
+  required: {
+    start_date: new Date(),
+    value: 2,
+  },
+  required2: {},
+};
 
 const string_array_schema = [
   Joi.string().default('test' as 'test'),
