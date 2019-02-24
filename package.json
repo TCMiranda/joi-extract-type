@@ -27,11 +27,10 @@
     "typescript": "^3.2.2"
   },
   "peerDependencies": {
-    "@types/joi": "^13.6.0",
-    "joi": "^13.7.0"
+    "joi": ">=13.7.0 <=14"
   },
   "dependencies": {
-    "@types/joi": "^13.6.3",
-    "joi": "^13.7.0"
+    "@types/joi": ">=13",
+    "joi": ">=13"
   }
 }
