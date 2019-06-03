@@ -36,7 +36,7 @@ npm i --save joi-extract-type@ts2-1
 
 Import the library and patch Joi's typings:
 ```ts
-import * as Joi from 'joi';
+import * as Joi from '@hapi/joi';
 import './index';
 ```
 

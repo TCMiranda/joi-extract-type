@@ -1,9 +1,9 @@
 /** @format */
 
-import * as Joi from 'joi';
+import * as Joi from '@hapi/joi';
 import './index';
 
-// Unkown types or AnySchema defaults to type any
+// Unknown types or AnySchema defaults to type any
 const any_schema = Joi.any();
 type extractAny = Joi.extractType<typeof any_schema>;
 export const extractedAny: extractAny = 'anything';
