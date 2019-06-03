@@ -1,6 +1,6 @@
 /** @format */
 
-import 'joi';
+import '@hapi/joi';
 
 /**
  * Helpers
@@ -8,7 +8,7 @@ import 'joi';
 type Map<T> = { [P in keyof T]: T[P] };
 type Diff<T, U> = T extends U ? never : T;
 
-declare module 'joi' {
+declare module '@hapi/joi' {
   /**
    * Field requirements interface
    */
