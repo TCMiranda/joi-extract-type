@@ -246,6 +246,19 @@ declare module '@hapi/joi' {
           : ObjectSchema<Box<extractMap<{ [key: string]: T }>, false>>)
       : ObjectSchema<Box<extractMap<{ [key: string]: T }>, false>>;
 
+    append<T extends mappedSchemaMap|null|undefined>(
+      schema: T
+    ):
+      T extends mappedSchemaMap ?
+        (
+          this extends ObjectSchema<infer O>
+            ? (O extends Box<infer oT, infer oR>
+            ? ObjectSchema<BoxType<O, oT & extractMap<T>>>
+            : ObjectSchema<Box<extractMap<T>, false>>)
+            : ObjectSchema<Box<extractMap<T>, false>>
+        ) :
+        this
+
     // this extends ObjectSchema<infer O>
     //   ? (O extends null
     //       ? ObjectSchema<extractMap<{ [key: string]: T }>>
