@@ -6,7 +6,6 @@ import '@hapi/joi';
  * Helpers
  */
 type Map<T> = { [P in keyof T]: T[P] };
-type Diff<T, U> = T extends U ? never : T;
 
 declare module '@hapi/joi' {
   /**
@@ -176,7 +175,7 @@ declare module '@hapi/joi' {
 
   export function date<T extends Date>(): DateSchema<Box<T, false>>;
 
-  // TOOD: implement DecoratedExtractedValue at:
+  // TODO: implement DecoratedExtractedValue at:
   // T extends DateSchema
   // T extends FunctionSchema
 
