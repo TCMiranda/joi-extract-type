@@ -101,6 +101,21 @@ export const extractedComplexType: extractComplexType = {
   pipeline_rules: [extractedRule],
 };
 
+const appendedJobOperatorRoleSchema = jobOperatorRoleSchema.append({
+  excluded: Joi.boolean()
+})
+
+type extractAppendedSchema = Joi.extractType<typeof appendedJobOperatorRoleSchema>
+export const extractedAppended: extractAppendedSchema = {
+  id: '2015',
+  user_id: '102',
+  job_id: '52',
+  role: 'requester',
+  parent_index: 5,
+  pipeline_rules: [extractedRule],
+  excluded: true
+}
+
 function someFunction() {
   return someFunction;
 }
@@ -193,18 +208,3 @@ export const validationOverwrittenReturn: strictEnum = Joi.validate(
     if (typeof value === 'number') return 'tag' as 'tag';
   }
 );
-
-const appended_schema = jobOperatorRoleSchema.append({
-  appendedProp: Joi.boolean()
-})
-
-type extractAppendedSchema = Joi.extractType<typeof appended_schema>
-export const extractedAppended: extractAppendedSchema = {
-  id: '2015',
-  user_id: '102',
-  job_id: '52',
-  role: 'requester',
-  parent_index: 5,
-  pipeline_rules: [extractedRule],
-  appendedProp: true
-}
