@@ -3,20 +3,20 @@ Provides native type extraction from [Joi](https://github.com/hapijs/joi) Schema
 
 ---
 
-Joi Schemas are great. But if you use Typescrypt to define your entities, it is easy to dupplicate the definition inside the Schemas and all application interfaces.
+Joi Schemas are great. But if you use Typescript to define your entities, it is easy to duplicate the definition inside the Schemas and all application interfaces.
 
 This library enhances Joi interfaces to provides an utility to infer the type from a Schema.
 
 **Why should you use it**
 
-* Avoid dupplication from Joi Schemas and application interfaces
-* Port javascript applications using [Joi](https://github.com/hapijs/joi) to typescript easly
+* Avoid duplication from Joi Schemas and application interfaces
+* Port javascript applications using [Joi](https://github.com/hapijs/joi) to typescript easily
 * Does not requires changes to already defined Schemas
 
 
 **Limitation**
 
-* Joi is probably a superset of typescript in terms of validation, branching, conditional types, etc. This library is probably suitable for most simples cases, but wont ever prevent every validation error to occour with just static analisys.
+* Joi is probably a superset of typescript in terms of validation, branching, conditional types, etc. This library is probably suitable for most simples cases, but wont ever prevent every validation error to occur with just static analyses.
 * This is ~experimental~ and a work in progress. Although I use it in some projects and works for 99% of my schemas.
 
 
@@ -66,7 +66,7 @@ export const extractedObject: extractObject = { full_name: extractedString, is_e
 
 const roles = Joi.array().items(Joi.string());
 type extractArray = Joi.extractType<typeof roles>;
-export const extactedArray: extractArray = ['admin'];
+export const extractedArray: extractArray = ['admin'];
 
 const apply = Joi.array().items(Joi.object({ id: Joi.string() }));
 type extractApply = Joi.extractType<typeof apply>;
