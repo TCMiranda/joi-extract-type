@@ -107,12 +107,7 @@ const appendedJobOperatorRoleSchema = jobOperatorRoleSchema.append({
 
 type extractAppendedSchema = Joi.extractType<typeof appendedJobOperatorRoleSchema>
 export const extractedAppended: extractAppendedSchema = {
-  id: '2015',
-  user_id: '102',
-  job_id: '52',
-  role: 'requester',
-  parent_index: 5,
-  pipeline_rules: [extractedRule],
+  ...extractedComplexType,
   excluded: true
 }
 
