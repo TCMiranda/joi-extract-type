@@ -30,7 +30,7 @@
     "@hapi/joi": ">=15"
   },
   "dependencies": {
-    "@hapi/joi": ">=15",
-    "@types/hapi__joi": ">=15"
+    "@hapi/joi": "16",
+    "@types/hapi__joi": "16"
   }
 }

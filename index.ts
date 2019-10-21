@@ -1,13 +1,14 @@
 /** @format */
 
 import '@hapi/joi';
+import { SchemaLike } from '@hapi/joi';
 
 /**
  * Helpers
  */
 type Map<T> = { [P in keyof T]: T[P] };
 
-declare module '@hapi/joi' {
+declare namespace Joi {
   /**
    * Field requirements interface
    */
@@ -34,7 +35,16 @@ declare module '@hapi/joi' {
     | FunctionSchema<T>
     | ArraySchema<T>
     | ObjectSchema<T>
-    | AlternativesSchema<T>;
+    | AlternativesSchema<T>
+    | StringSchema
+    | NumberSchema
+    | BooleanSchema
+    | DateSchema
+    | FunctionSchema
+    | ArraySchema
+    | ObjectSchema
+    | AlternativesSchema
+    ;
 
   // Base types
   type primitiveType = string | number | boolean | Function | Date | undefined | null | void;
@@ -46,29 +56,33 @@ declare module '@hapi/joi' {
 
   export type extendsGuard<T, S> = S extends T ? S : T;
 
+  interface ValidationResult<T> { }
+
+  export interface AnySchema { }
+
   /**
    * Validation: extraction decorated methods
    */
-  export function validate<T, S extends mappedSchemaMap>(
-    value: T,
-    schema: S
-  ): ValidationResult<extendsGuard<T, extractType<S>>>;
-  export function validate<T, S extends mappedSchemaMap>(
-    value: T,
-    schema: S,
-    options: ValidationOptions
-  ): ValidationResult<extendsGuard<T, extractType<S>>>;
-  export function validate<T, R, S extends mappedSchemaMap>(
-    value: T,
-    schema: S,
-    options: ValidationOptions,
-    callback: (err: ValidationError, value: extendsGuard<T, extractType<S>>) => R
-  ): R;
-  export function validate<T, R, S extends mappedSchemaMap>(
-    value: T,
-    schema: S,
-    callback: (err: ValidationError, value: extendsGuard<T, extractType<S>>) => R
-  ): R;
+  // export function validate<T, S extends mappedSchemaMap>(
+  //   value: T,
+  //   schema: S
+  // ): ValidationResult<extendsGuard<T, extractType<S>>>;
+  // export function validate<T, S extends mappedSchemaMap>(
+  //   value: T,
+  //   schema: S,
+  //   options: ValidationOptions
+  // ): ValidationResult<extendsGuard<T, extractType<S>>>;
+  // export function validate<T, R, S extends mappedSchemaMap>(
+  //   value: T,
+  //   schema: S,
+  //   options: ValidationOptions,
+  //   callback: (err: ValidationError, value: extendsGuard<T, extractType<S>>) => R
+  // ): R;
+  // export function validate<T, R, S extends mappedSchemaMap>(
+  //   value: T,
+  //   schema: S,
+  //   callback: (err: ValidationError, value: extendsGuard<T, extractType<S>>) => R
+  // ): R;
 
   // TODO: concat
   // concat(schema: this): this;
@@ -227,14 +241,14 @@ declare module '@hapi/joi' {
           : ObjectSchema<Box<extractMap<T>, false>>)
       : ObjectSchema<Box<extractMap<T>, false>>;
 
-    pattern<S extends StringSchema, T extends mappedSchema>(
-      pattern: S,
-      schema: T
-    ): this extends ObjectSchema<infer O>
-      ? (O extends Box<infer oT, infer oR>
-          ? ObjectSchema<BoxType<O, oT | extractMap<{ [key in extractType<S>]: T }>>>
-          : ObjectSchema<Box<extractMap<{ [key in extractType<S>]: T }>, false>>)
-      : ObjectSchema<Box<extractMap<{ [key in extractType<S>]: T }>, false>>;
+    // pattern<S extends StringSchema, T extends mappedSchema>(
+    //   pattern: S,
+    //   schema: T
+    // ): this extends ObjectSchema<infer O>
+    //   ? (O extends Box<infer oT, infer oR>
+    //       ? ObjectSchema<BoxType<O, oT | extractMap<{ [key in extractType<S>]: T }>>>
+    //       : ObjectSchema<Box<extractMap<{ [key in extractType<S>]: T }>, false>>)
+    //   : ObjectSchema<Box<extractMap<{ [key in extractType<S>]: T }>, false>>;
 
     pattern<T extends mappedSchema>(
       pattern: RegExp,
@@ -282,21 +296,21 @@ declare module '@hapi/joi' {
    * Alternatives: extraction decorated schema
    */
   export interface AlternativesSchema<N = any> extends AnySchema {
-    try<T extends mappedSchema[]>(
-      ...values: T
-    ): this extends AlternativesSchema<infer O>
-      ? (O extends Box<infer oT, infer oR>
-          ? AlternativesSchema<BoxType<O, oT | extractType<T>>>
-          : AlternativesSchema<Box<extractType<T>, false>>)
-      : AlternativesSchema<Box<extractType<T>, false>>;
+    // try<T extends mappedSchema[]>(
+    //   ...values: T
+    // ): this extends AlternativesSchema<infer O>
+    //   ? (O extends Box<infer oT, infer oR>
+    //       ? AlternativesSchema<BoxType<O, oT | extractType<T>>>
+    //       : AlternativesSchema<Box<extractType<T>, false>>)
+    //   : AlternativesSchema<Box<extractType<T>, false>>;
 
-    try<T extends mappedSchema[]>(
-      values: T
-    ): this extends AlternativesSchema<infer O>
-      ? (O extends Box<infer oT, infer oR>
-          ? AlternativesSchema<BoxType<O, oT | extractType<T>>>
-          : AlternativesSchema<Box<extractType<T>, false>>)
-      : AlternativesSchema<Box<extractType<T>, false>>;
+    // try<T extends mappedSchema[]>(
+    //   values: T
+    // ): this extends AlternativesSchema<infer O>
+    //   ? (O extends Box<infer oT, infer oR>
+    //       ? AlternativesSchema<BoxType<O, oT | extractType<T>>>
+    //       : AlternativesSchema<Box<extractType<T>, false>>)
+    //   : AlternativesSchema<Box<extractType<T>, false>>;
 
     try(...types: SchemaLike[]): this;
     try(types: SchemaLike[]): this;
@@ -367,9 +381,20 @@ declare module '@hapi/joi' {
         /** Primitive types */
         T extends primitiveType ? T :
 
+        // debug, trying to understand why every schema is accepted within this extends clause
+        T extends StringSchema<infer O> ? O :
+
         /** Holds the extracted type */
-        T extends BooleanSchema<infer O> ? maybeExtractBox<O> :
+        // T extends Joi.StringSchema ? string :
+        // T extends Joi.BooleanSchema ? boolean :
+        // T extends Joi.NumberSchema ? number :
+        // T extends Joi.DateSchema ? Date :
+        // T extends Joi.FunctionSchema ? Function :
+        // T extends Joi.ArraySchema ? any[] :
+        // T extends Joi.ObjectSchema ? { [k: string]: any } :
+        
         T extends StringSchema<infer O> ? maybeExtractBox<O> :
+        T extends BooleanSchema<infer O> ? maybeExtractBox<O> :
         T extends NumberSchema<infer O> ? maybeExtractBox<O> :
         T extends DateSchema<infer O> ? maybeExtractBox<O> :
         T extends FunctionSchema<infer O> ? maybeExtractBox<O> :
@@ -414,3 +439,5 @@ declare module '@hapi/joi' {
          */
         extractOne<T>;
 }
+
+export type extractType<T extends Joi.mappedSchema> = Joi.extractType<T>

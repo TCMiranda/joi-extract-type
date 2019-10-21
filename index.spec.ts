@@ -2,26 +2,27 @@
 
 import * as Joi from '@hapi/joi';
 import './index';
+import { extractType } from './index';
 
 // Unknown types or AnySchema defaults to type any
 const any_schema = Joi.any();
-type extractAny = Joi.extractType<typeof any_schema>;
+type extractAny = extractType<typeof any_schema>;
 export const extractedAny: extractAny = 'anything';
 
 const is_enabled = Joi.boolean();
-type extractBoolean = Joi.extractType<typeof is_enabled>;
+type extractBoolean = extractType<typeof is_enabled>;
 export const extractedBoolean: extractBoolean = true;
 
 const full_name = Joi.string();
-type extractString = Joi.extractType<typeof full_name>;
+type extractString = extractType<typeof full_name>;
 export const extractedString: extractString = 'string';
 
 const created_at = Joi.date();
-type extractDate = Joi.extractType<typeof created_at>;
+type extractDate = extractType<typeof created_at>;
 export const extractedDate: extractDate = new Date();
 
 const priority = Joi.number();
-type extractNumber = Joi.extractType<typeof priority>;
+type extractNumber = extractType<typeof priority>;
 export const extractedNumber: extractNumber = 5;
 
 const userAsObject = {
@@ -35,8 +36,8 @@ const userAsObject = {
   priority,
 };
 const user = Joi.object(userAsObject);
-type extractObject = Joi.extractType<typeof userAsObject>;
-type extractObjectSchema = Joi.extractType<typeof user>;
+type extractObject = extractType<typeof userAsObject>;
+type extractObjectSchema = extractType<typeof user>;
 export const extractedObject: extractObject = {
   created_at: extractedDate,
   full_name: extractedString,
@@ -49,35 +50,35 @@ export const extractedObjectSchema: extractObjectSchema = extractedObject;
 const roles = Joi.array()
   .items(Joi.string().valid(['admin', 'member', 'guest']))
   .items(Joi.number());
-type extractArray = Joi.extractType<typeof roles>;
+type extractArray = extractType<typeof roles>;
 export const extactedArray: extractArray = ['admin', 2];
 
 const uuid_exp = `[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}`;
 const uuid_pattern = new RegExp(uuid_exp, 'i');
 const uuid = Joi.string().regex(uuid_pattern);
-type extractUuid = Joi.extractType<typeof uuid>;
+type extractUuid = extractType<typeof uuid>;
 export const extractedUuid: extractUuid = '123e4567-e89b-12d3-a456-426655440000';
 
 const apply = Joi.array().items(Joi.object({ id: uuid.required() }));
-type extractApply = Joi.extractType<typeof apply>;
+type extractApply = extractType<typeof apply>;
 const anyApply = [{ id: '3' }, { id: undefined }];
 export const extractedApply: extractApply = anyApply;
 
 const rule_flat = Joi.array()
   .items(Joi.string())
   .items(Joi.object({ id: uuid.required() }));
-type extractRuleFlat = Joi.extractType<typeof rule_flat>;
+type extractRuleFlat = extractType<typeof rule_flat>;
 export const extractedRuleFlat: extractRuleFlat = [{ id: 'string' }, 'test'];
 
 const rule = Joi.object().keys({ apply, id: uuid.required() });
-type extractRule = Joi.extractType<typeof rule>;
+type extractRule = extractType<typeof rule>;
 export const extractedRule: extractRule = {
   apply: extractedApply,
   id: 'string',
 };
 
 export const ruleMap = Joi.object().pattern(/\w+/, rule);
-type extractRuleMap = Joi.extractType<typeof ruleMap>;
+type extractRuleMap = extractType<typeof ruleMap>;
 export const extractedRuleMap: extractRuleMap = { somekey: extractedRule };
 
 export const jobOperatorRoleSchema = Joi.object({
@@ -91,7 +92,7 @@ export const jobOperatorRoleSchema = Joi.object({
     .items(rule)
     .required(),
 });
-type extractComplexType = Joi.extractType<typeof jobOperatorRoleSchema>;
+type extractComplexType = extractType<typeof jobOperatorRoleSchema>;
 export const extractedComplexType: extractComplexType = {
   id: '2015',
   user_id: '102',
@@ -105,7 +106,7 @@ const appendedJobOperatorRoleSchema = jobOperatorRoleSchema.append({
   excluded: Joi.boolean()
 })
 
-type extractAppendedSchema = Joi.extractType<typeof appendedJobOperatorRoleSchema>
+type extractAppendedSchema = extractType<typeof appendedJobOperatorRoleSchema>
 export const extractedAppended: extractAppendedSchema = {
   ...extractedComplexType,
   excluded: true
@@ -115,22 +116,22 @@ function someFunction() {
   return someFunction;
 }
 const createUserSchema = Joi.func<typeof someFunction>();
-type extractFunction = Joi.extractType<typeof createUserSchema>;
+type extractFunction = extractType<typeof createUserSchema>;
 export const extractedFunction: extractFunction = someFunction;
 
 const number_string = Joi.alt().try(Joi.number().valid(1, 2, 3), Joi.string());
-type extractNumberString = Joi.extractType<typeof number_string>;
+type extractNumberString = extractType<typeof number_string>;
 export const extractNumberStringNumber: extractNumberString = 2;
 export const extractNumberStringString: extractNumberString = '2';
 
 const date_time1 = Joi.alternatives([Joi.date(), Joi.number(), Joi.string()]);
-type extractDateTime1 = Joi.extractType<typeof date_time1>;
+type extractDateTime1 = extractType<typeof date_time1>;
 export const extractDateTimeDate1: extractDateTime1 = new Date();
 export const extractDateTimeTime1: extractDateTime1 = +new Date();
 export const extractDateTimeString1: extractDateTime1 = new Date().toISOString();
 
 const when = Joi.alt().when('x', { is: 'a', then: Joi.string(), otherwise: Joi.number() });
-type extractedWhen = Joi.extractType<typeof when>;
+type extractedWhen = extractType<typeof when>;
 export const extractWhen1: extractedWhen = 2;
 export const extractWhen2: extractedWhen = '2';
 
@@ -141,7 +142,7 @@ const required_alt = {
     value: when.required(),
   }).required(),
 };
-type extractedRequiredAlt = Joi.extractType<typeof required_alt>;
+type extractedRequiredAlt = extractType<typeof required_alt>;
 export const extractRequiredAlt: extractedRequiredAlt = {
   required: { start_date: new Date(), value: '2' },
 };
@@ -155,7 +156,7 @@ const required_alt_augmented = Joi.object(required_alt).keys({
     .pattern(Joi.string(), Joi.number())
     .pattern(Joi.string().valid('pattern_key'), Joi.number()),
 });
-type extractedRequiredAltAugmented = Joi.extractType<typeof required_alt_augmented>;
+type extractedRequiredAltAugmented = extractType<typeof required_alt_augmented>;
 export const extractRequiredAltAugmented: extractedRequiredAltAugmented = {
   required: {
     start_date: new Date(),
@@ -170,7 +171,7 @@ const string_array_schema = [
     .items([Joi.string(), Joi.number()])
     .valid('string', 2), // TODO overwrite valid on ArraySchema
 ];
-type extractStringArray = Joi.extractType<typeof string_array_schema>;
+type extractStringArray = extractType<typeof string_array_schema>;
 export const extractStringArrayString: extractStringArray = 'string';
 export const extractStringArrayArray: extractStringArray = ['string', 2];
 
