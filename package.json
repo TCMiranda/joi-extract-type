@@ -27,10 +27,10 @@
     "typescript": "^3.2.2"
   },
   "peerDependencies": {
-    "@hapi/joi": ">=15"
+    "@hapi/joi": "~15"
   },
   "dependencies": {
-    "@hapi/joi": ">=15",
-    "@types/hapi__joi": ">=15"
+    "@hapi/joi": "~15",
+    "@types/hapi__joi": "~15"
   }
 }
