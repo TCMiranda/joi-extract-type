@@ -101,6 +101,29 @@ export const extractedComplexType: extractComplexType = {
   pipeline_rules: [extractedRule],
 };
 
+export const usingDefaultWithProps = Joi.object({
+  number_prop_with_default: Joi.number().default(2),
+  string_prop_with_default: Joi.string().default('string'),
+  boolean_prop_with_default: Joi.boolean().default(false),
+  date_prop_with_default: Joi.date().default(new Date()),
+  array_prop_with_default: Joi.array().default([5]),
+  object_prop_with_default: Joi.object({ number: Joi.number() }).default({ string: Joi.string() }),
+})
+type usingDefaultWithPropsType = Joi.extractType<typeof usingDefaultWithProps>;
+export const extractedUsingDefaultWithProps: usingDefaultWithPropsType = {
+  number_prop_with_default: 20,
+  string_prop_with_default: 'string',
+  boolean_prop_with_default: true,
+  date_prop_with_default: new Date(),
+  array_prop_with_default: [1, 2],
+  object_prop_with_default: { number: 5 },
+};
+
+export const extractedComplexTypeValidationResponse = Joi.validate(
+  { },
+  jobOperatorRoleSchema
+)
+
 const appendedJobOperatorRoleSchema = jobOperatorRoleSchema.append({
   excluded: Joi.boolean()
 })
