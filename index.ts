@@ -55,10 +55,6 @@ declare namespace JoiExtract {
 
   export type extendsGuard<T, S> = S extends T ? S : T;
 
-  // interface ValidationResult<T> { }
-
-  // export interface AnySchema { }
-
   /**
    * Validation: extraction decorated methods
    */
@@ -326,6 +322,7 @@ declare namespace JoiExtract {
     optional(): AlternativesSchema<BoxReq<N, false>>;
     optional(): this;
 
+    // TODO: this is the section that causes the type error
     when<
       R,
       T1 extends mappedSchema,
@@ -385,18 +382,7 @@ declare namespace JoiExtract {
         /** Primitive types */
         T extends primitiveType ? T :
 
-        // debug, trying to understand why every schema is accepted within this extends clause
-        // T extends StringSchema<infer O> ? O :
-
         /** Holds the extracted type */
-        // T extends Joi.StringSchema ? string :
-        // T extends Joi.BooleanSchema ? boolean :
-        // T extends Joi.NumberSchema ? number :
-        // T extends Joi.DateSchema ? Date :
-        // T extends Joi.FunctionSchema ? Function :
-        // T extends Joi.ArraySchema ? any[] :
-        // T extends Joi.ObjectSchema ? { [k: string]: any } :
-
         T extends StringSchema<infer O> ? maybeExtractBox<O> :
         T extends BooleanSchema<infer O> ? maybeExtractBox<O> :
         T extends NumberSchema<infer O> ? maybeExtractBox<O> :
