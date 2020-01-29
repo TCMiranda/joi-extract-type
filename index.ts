@@ -1,14 +1,14 @@
 /** @format */
 
 import '@hapi/joi';
-import { SchemaLike } from '@hapi/joi';
+import * as Joi from '@hapi/joi';
 
 /**
  * Helpers
  */
 type Map<T> = { [P in keyof T]: T[P] };
 
-declare namespace Joi {
+declare namespace JoiExtract {
   /**
    * Field requirements interface
    */
@@ -48,41 +48,41 @@ declare namespace Joi {
 
   // Base types
   type primitiveType = string | number | boolean | Function | Date | undefined | null | void;
-  type thruthyPrimitiveType = NonNullable<primitiveType>;
+  type truthyPrimitiveType = NonNullable<primitiveType>;
 
-  export type mappedSchema = SchemaLike | BoxedPrimitive;
+  export type mappedSchema = Joi.SchemaLike | BoxedPrimitive;
   export type mappedSchemaMap<T = any> = { [K: string]: mappedSchema };
   // export type mappedSchemaMap<T extends mappedSchema = any> = { [K in keyof T]: T[K] };
 
   export type extendsGuard<T, S> = S extends T ? S : T;
 
-  interface ValidationResult<T> { }
+  // interface ValidationResult<T> { }
 
-  export interface AnySchema { }
+  // export interface AnySchema { }
 
   /**
    * Validation: extraction decorated methods
    */
-  // export function validate<T, S extends mappedSchemaMap>(
-  //   value: T,
-  //   schema: S
-  // ): ValidationResult<extendsGuard<T, extractType<S>>>;
-  // export function validate<T, S extends mappedSchemaMap>(
-  //   value: T,
-  //   schema: S,
-  //   options: ValidationOptions
-  // ): ValidationResult<extendsGuard<T, extractType<S>>>;
-  // export function validate<T, R, S extends mappedSchemaMap>(
-  //   value: T,
-  //   schema: S,
-  //   options: ValidationOptions,
-  //   callback: (err: ValidationError, value: extendsGuard<T, extractType<S>>) => R
-  // ): R;
-  // export function validate<T, R, S extends mappedSchemaMap>(
-  //   value: T,
-  //   schema: S,
-  //   callback: (err: ValidationError, value: extendsGuard<T, extractType<S>>) => R
-  // ): R;
+  export function validate<T, S extends mappedSchemaMap>(
+    value: T,
+    schema: S
+  ): Joi.ValidationResult;
+  export function validate<T, S extends mappedSchemaMap>(
+    value: T,
+    schema: S,
+    options: Joi.ValidationOptions
+  ): Joi.ValidationResult;
+  export function validate<T, R, S extends mappedSchemaMap>(
+    value: T,
+    schema: S,
+    options: Joi.ValidationOptions,
+    callback: (err: Joi.ValidationError, value: extendsGuard<T, extractType<S>>) => R
+  ): R;
+  export function validate<T, R, S extends mappedSchemaMap>(
+    value: T,
+    schema: S,
+    callback: (err: Joi.ValidationError, value: extendsGuard<T, extractType<S>>) => R
+  ): R;
 
   // TODO: concat
   // concat(schema: this): this;
@@ -113,6 +113,7 @@ declare namespace Joi {
     exist(): this;
     optional(): StringSchema<BoxReq<N, false>>;
     optional(): this;
+    __stringSchema(): void;
   }
 
   export function string<T extends string>(): StringSchema<{ T: extractType<T>; R: false }>;
@@ -136,6 +137,7 @@ declare namespace Joi {
     exist(): this;
     optional(): NumberSchema<BoxReq<N, false>>;
     optional(): this;
+    __numberSchema(): void;
   }
 
   export function number<T extends number>(): NumberSchema<Box<extractType<T>, false>>;
@@ -162,6 +164,7 @@ declare namespace Joi {
     exist(): this;
     optional(): BooleanSchema<BoxReq<N, false>>;
     optional(): this;
+    __booleanSchema(): void;
   }
 
   export function boolean<T extends boolean>(): BooleanSchema<Box<T, false>>;
@@ -185,6 +188,7 @@ declare namespace Joi {
     exist(): this;
     optional(): DateSchema<BoxReq<N, false>>;
     optional(): this;
+    __dateSchema(): void;
   }
 
   export function date<T extends Date>(): DateSchema<Box<T, false>>;
@@ -203,6 +207,7 @@ declare namespace Joi {
     exist(): this;
     optional(): FunctionSchema<BoxReq<N, false>>;
     optional(): this;
+    __functionSchema(): void;
   }
 
   export function func<T extends Function>(): FunctionSchema<Box<T, false>>;
@@ -232,7 +237,7 @@ declare namespace Joi {
   /**
    * Object: extraction decorated schema
    */
-  export interface ObjectSchema<N = null> extends AnySchema {
+  export interface ObjectSchema<N = null> extends Joi.AnySchema {
     keys<T extends mappedSchemaMap>(
       schema: T
     ): this extends ObjectSchema<infer O>
@@ -241,14 +246,14 @@ declare namespace Joi {
           : ObjectSchema<Box<extractMap<T>, false>>)
       : ObjectSchema<Box<extractMap<T>, false>>;
 
-    // pattern<S extends StringSchema, T extends mappedSchema>(
-    //   pattern: S,
-    //   schema: T
-    // ): this extends ObjectSchema<infer O>
-    //   ? (O extends Box<infer oT, infer oR>
-    //       ? ObjectSchema<BoxType<O, oT | extractMap<{ [key in extractType<S>]: T }>>>
-    //       : ObjectSchema<Box<extractMap<{ [key in extractType<S>]: T }>, false>>)
-    //   : ObjectSchema<Box<extractMap<{ [key in extractType<S>]: T }>, false>>;
+    pattern<S extends StringSchema, T extends mappedSchema>(
+      pattern: S,
+      schema: T
+    ): this extends ObjectSchema<infer O>
+      ? (O extends Box<infer oT, infer oR>
+          ? ObjectSchema<BoxType<O, oT | extractMap<{ [key in extractType<S>]: T }>>>
+          : ObjectSchema<Box<extractMap<{ [key in extractType<S>]: T }>, false>>)
+      : ObjectSchema<Box<extractMap<{ [key in extractType<S>]: T }>, false>>;
 
     pattern<T extends mappedSchema>(
       pattern: RegExp,
@@ -278,7 +283,7 @@ declare namespace Joi {
     //       : ObjectSchema<extractMap<{ [key: string]: T }> | O>)
     //   : ObjectSchema<extractMap<{ [key: string]: T }>>;
 
-    pattern(pattern: RegExp | SchemaLike, schema: SchemaLike): this;
+    pattern(pattern: RegExp | Joi.SchemaLike, schema: Joi.SchemaLike): this;
 
     required(): ObjectSchema<BoxReq<N, true>>;
     required(): this;
@@ -295,25 +300,25 @@ declare namespace Joi {
   /**
    * Alternatives: extraction decorated schema
    */
-  export interface AlternativesSchema<N = any> extends AnySchema {
-    // try<T extends mappedSchema[]>(
-    //   ...values: T
-    // ): this extends AlternativesSchema<infer O>
-    //   ? (O extends Box<infer oT, infer oR>
-    //       ? AlternativesSchema<BoxType<O, oT | extractType<T>>>
-    //       : AlternativesSchema<Box<extractType<T>, false>>)
-    //   : AlternativesSchema<Box<extractType<T>, false>>;
+  export interface AlternativesSchema<N = any> extends Joi.AnySchema {
+    try<T extends mappedSchema[]>(
+      ...values: T
+    ): this extends AlternativesSchema<infer O>
+      ? (O extends Box<infer oT, infer oR>
+          ? AlternativesSchema<BoxType<O, oT | extractType<T>>>
+          : AlternativesSchema<Box<extractType<T>, false>>)
+      : AlternativesSchema<Box<extractType<T>, false>>;
 
-    // try<T extends mappedSchema[]>(
-    //   values: T
-    // ): this extends AlternativesSchema<infer O>
-    //   ? (O extends Box<infer oT, infer oR>
-    //       ? AlternativesSchema<BoxType<O, oT | extractType<T>>>
-    //       : AlternativesSchema<Box<extractType<T>, false>>)
-    //   : AlternativesSchema<Box<extractType<T>, false>>;
+    try<T extends mappedSchema[]>(
+      values: T
+    ): this extends AlternativesSchema<infer O>
+      ? (O extends Box<infer oT, infer oR>
+          ? AlternativesSchema<BoxType<O, oT | extractType<T>>>
+          : AlternativesSchema<Box<extractType<T>, false>>)
+      : AlternativesSchema<Box<extractType<T>, false>>;
 
-    try(...types: SchemaLike[]): this;
-    try(types: SchemaLike[]): this;
+    try(...types: Joi.SchemaLike[]): this;
+    try(types: Joi.SchemaLike[]): this;
 
     required(): AlternativesSchema<BoxReq<N, true>>;
     required(): this;
@@ -382,7 +387,7 @@ declare namespace Joi {
         T extends primitiveType ? T :
 
         // debug, trying to understand why every schema is accepted within this extends clause
-        T extends StringSchema<infer O> ? O :
+        // T extends StringSchema<infer O> ? O :
 
         /** Holds the extracted type */
         // T extends Joi.StringSchema ? string :
@@ -392,7 +397,7 @@ declare namespace Joi {
         // T extends Joi.FunctionSchema ? Function :
         // T extends Joi.ArraySchema ? any[] :
         // T extends Joi.ObjectSchema ? { [k: string]: any } :
-        
+
         T extends StringSchema<infer O> ? maybeExtractBox<O> :
         T extends BooleanSchema<infer O> ? maybeExtractBox<O> :
         T extends NumberSchema<infer O> ? maybeExtractBox<O> :
@@ -404,7 +409,7 @@ declare namespace Joi {
         /** Supports Joi.alternatives(Schema1, schema2, ...) */
         T extends AlternativesSchema<infer O> ? maybeExtractBox<O> :
         T extends mappedSchemaMap<infer O> ? maybeExtractBox<O> :
-        T extends AnySchema ? any :
+        T extends Joi.AnySchema ? any :
         any;
 
   // prettier-ignore
@@ -440,4 +445,4 @@ declare namespace Joi {
         extractOne<T>;
 }
 
-export type extractType<T extends Joi.mappedSchema> = Joi.extractType<T>
+export type extractType<T extends JoiExtract.mappedSchema> = JoiExtract.extractType<T>
