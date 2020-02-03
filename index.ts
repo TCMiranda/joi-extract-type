@@ -322,7 +322,6 @@ declare namespace JoiExtract {
     optional(): AlternativesSchema<BoxReq<N, false>>;
     optional(): this;
 
-    // TODO: this is the section that causes the type error
     when<
       R,
       T1 extends mappedSchema,
@@ -338,7 +337,7 @@ declare namespace JoiExtract {
             >
           : AlternativesSchema<Box<extractType<T['then']> | extractType<T['otherwise']>, false>>)
       : AlternativesSchema<Box<extractType<T['then']> | extractType<T['otherwise']>, false>>;
-    
+
     when(ref: string | Joi.Reference, options: Joi.WhenOptions): this;
     when(ref: Joi.Schema, options: Joi.WhenSchemaOptions): this;
   }
