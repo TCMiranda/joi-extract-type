@@ -338,6 +338,9 @@ declare namespace JoiExtract {
             >
           : AlternativesSchema<Box<extractType<T['then']> | extractType<T['otherwise']>, false>>)
       : AlternativesSchema<Box<extractType<T['then']> | extractType<T['otherwise']>, false>>;
+    
+    when(ref: string | Joi.Reference, options: Joi.WhenOptions): this;
+    when(ref: Joi.Schema, options: Joi.WhenSchemaOptions): this;
   }
 
   export function alternatives<T extends mappedSchema[]>(
