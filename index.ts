@@ -84,9 +84,9 @@ declare module '@hapi/joi' {
    * String: extraction decorated schema
    */
   export interface StringSchema<N extends Box<string | null, boolean> = any> {
-    default(): this;
+    default<T extends string>(value: T, description?: string): StringSchema<Box<N['T'] | T, true>>;
     default(value: any, description?: string): this;
-    default<T extends string>(value: T, description?: string): StringSchema<BoxType<N, N['T'] | T>>;
+    default(): this;
 
     allow<T extends string | null>(values: T[]): StringSchema<BoxType<N, string | typeof values[number]>>;
     allow<T extends string | null>(...values: T[]): StringSchema<BoxType<N, string | typeof values[number]>>;
@@ -112,9 +112,9 @@ declare module '@hapi/joi' {
    * Number: extraction decorated schema
    */
   export interface NumberSchema<N extends Box<number | null, boolean> = any> {
-    default(): this;
+    default<T extends number>(value: T, description?: string): NumberSchema<Box<N['T'] | T, true>>;
     default(value: any, description?: string): this;
-    default<T extends number>(value: T, description?: string): NumberSchema<BoxType<N, N['T'] | T>>;
+    default(): this;
 
     allow<T extends number | null>(values: T[]): NumberSchema<BoxType<N, number | typeof values[number]>>;
     allow<T extends number | null>(...values: T[]): NumberSchema<BoxType<N, number | typeof values[number]>>;
@@ -140,12 +140,12 @@ declare module '@hapi/joi' {
    * Boolean: extraction decorated schema
    */
   export interface BooleanSchema<N extends Box<boolean | null, boolean> = any> {
-    default(): this;
-    default(value: any, description?: string): this;
     default<T extends boolean>(
       value: T,
       description?: string
-    ): BooleanSchema<BoxType<N, N['T'] | T>>;
+    ): BooleanSchema<Box<N['T'] | T, true>>;
+    default(value: any, description?: string): this;
+    default(): this;
 
     allow<T extends boolean | null>(values: T[]): BooleanSchema<BoxType<N, boolean | typeof values[number]>>;
     allow<T extends boolean | null>(...values: T[]): BooleanSchema<BoxType<N, boolean | typeof values[number]>>;
@@ -171,9 +171,9 @@ declare module '@hapi/joi' {
    * Date: extraction decorated schema
    */
   export interface DateSchema<N extends Box<Date | null, boolean> = any> {
-    default(): this;
+    default<T extends Date>(value: T, description?: string): DateSchema<Box<N['T'] | T, true>>;
     default(value: any, description?: string): this;
-    default<T extends Date>(value: T, description?: string): DateSchema<BoxType<N, N['T'] | T>>;
+    default(): this;
 
     allow<T extends Date | null>(values: T[]): DateSchema<BoxType<N, Date | typeof values[number]>>;
     allow<T extends Date | null>(...values: T[]): DateSchema<BoxType<N, Date | typeof values[number]>>;
@@ -213,10 +213,19 @@ declare module '@hapi/joi' {
 
   export function func<T extends Function>(): FunctionSchema<Box<T, false>>;
 
+  type ArrayType<T> = T extends (infer U)[] ? U : never;
+
   /**
    * Array: extraction decorated schema
    */
   export interface ArraySchema<N = null> {
+    default<T extends any[]>(
+      value: T,
+      description?: string
+    ): ArraySchema<BoxReq<BoxUnion<N, extractType<ArrayType<T>>>, true>>;
+    default(value: any, description?: string): this;
+    default(): this;
+
     items<T extends mappedSchema>(
       type: T
     ): this extends ArraySchema<infer O>
@@ -239,6 +248,13 @@ declare module '@hapi/joi' {
    * Object: extraction decorated schema
    */
   export interface ObjectSchema<N = null> extends AnySchema {
+    default<T extends any>(
+      value: T,
+      description?: string
+    ): ObjectSchema<BoxReq<BoxUnion<N, extractType<T>>, true>>;
+    default(value: any, description?: string): this;
+    default(): this;
+
     keys<T extends mappedSchemaMap>(
       schema: T
     ): this extends ObjectSchema<infer O>
@@ -265,18 +281,15 @@ declare module '@hapi/joi' {
           : ObjectSchema<Box<extractMap<{ [key: string]: T }>, false>>)
       : ObjectSchema<Box<extractMap<{ [key: string]: T }>, false>>;
 
-    append<T extends mappedSchemaMap|null|undefined>(
+    append<T extends mappedSchemaMap | null | undefined>(
       schema: T
-    ):
-      T extends mappedSchemaMap ?
-        (
-          this extends ObjectSchema<infer O>
-            ? (O extends Box<infer oT, infer oR>
-            ? ObjectSchema<BoxType<O, oT & extractMap<T>>>
-            : ObjectSchema<Box<extractMap<T>, false>>)
-            : ObjectSchema<Box<extractMap<T>, false>>
-        ) :
-        this
+    ): T extends mappedSchemaMap
+      ? (this extends ObjectSchema<infer O>
+          ? (O extends Box<infer oT, infer oR>
+              ? ObjectSchema<BoxType<O, oT & extractMap<T>>>
+              : ObjectSchema<Box<extractMap<T>, false>>)
+          : ObjectSchema<Box<extractMap<T>, false>>)
+      : this;
 
     // this extends ObjectSchema<infer O>
     //   ? (O extends null
@@ -363,13 +376,13 @@ declare module '@hapi/joi' {
   type FilterVoid<T extends string | number | symbol, O extends any> = {
     [K in T extends (string | number | symbol)
       ? (O[T] extends (null | undefined | void) ? never : T)
-      : never]: O[K]
+      : never]: O[K];
   };
 
   type MarkRequired<T, B> = {
     [K in keyof T]: T[K] extends BoxedPrimitive<infer D>
       ? (D['R'] extends B ? T[K] : void)
-      : (B extends false ? T[K] : void)
+      : (B extends false ? T[K] : void);
   };
 
   type Required<T> = FilterVoid<keyof T, MarkRequired<T, true>>;
@@ -384,53 +397,52 @@ declare module '@hapi/joi' {
 
   // prettier-ignore
   type extractOne<T extends mappedSchema> =
-        /** Primitive types */
-        T extends primitiveType ? T :
+    /** Primitive types */
+    T extends primitiveType ? T :
 
-        /** Holds the extracted type */
-        T extends BooleanSchema<infer O> ? maybeExtractBox<O> :
-        T extends StringSchema<infer O> ? maybeExtractBox<O> :
-        T extends NumberSchema<infer O> ? maybeExtractBox<O> :
-        T extends DateSchema<infer O> ? maybeExtractBox<O> :
-        T extends FunctionSchema<infer O> ? maybeExtractBox<O> :
-        T extends ArraySchema<infer O> ? maybeExtractBox<O>[] :
-        T extends ObjectSchema<infer O> ? maybeExtractBox<O> :
+    /** Holds the extracted type */
+    T extends BooleanSchema<infer O> ? maybeExtractBox<O> :
+    T extends StringSchema<infer O> ? maybeExtractBox<O> :
+    T extends NumberSchema<infer O> ? maybeExtractBox<O> :
+    T extends DateSchema<infer O> ? maybeExtractBox<O> :
+    T extends FunctionSchema<infer O> ? maybeExtractBox<O> :
+    T extends ArraySchema<infer O> ? maybeExtractBox<O>[] :
+    T extends ObjectSchema<infer O> ? maybeExtractBox<O> :
 
-        /** Supports Joi.alternatives(Schema1, schema2, ...) */
-        T extends AlternativesSchema<infer O> ? maybeExtractBox<O> :
-        T extends mappedSchemaMap<infer O> ? maybeExtractBox<O> :
-        T extends AnySchema ? any :
-        any;
+    /** Supports Joi.alternatives(Schema1, schema2, ...) */
+    T extends AlternativesSchema<infer O> ? maybeExtractBox<O> :
+    T extends mappedSchemaMap<infer O> ? maybeExtractBox<O> :
+    T extends AnySchema ? any :
+    any;
 
   // prettier-ignore
   export type extractType<T extends mappedSchema> =
+    /**
+     * Hack to support [Schema1, Schema2, ...N] alternatives notation
+     * Can't use extractType directly here because of cycles:
+     * ```
+     * T extends Array<infer O> ? extractType<O> :
+     *                            ^ cycle
+     * ```
+     */
+    T extends Array<infer O> ? (
+        O extends mappedSchema ? extractOne<O> : O
+    ) :
 
-        /**
-         * Hack to support [Schema1, Schema2, ...N] alternatives notation
-         * Can't use extractType directly here because of cycles:
-         * ```
-         * T extends Array<infer O> ? extractType<O> :
-         *                            ^ cycle
-         * ```
-         */
-        T extends Array<infer O> ? (
-            O extends mappedSchema ? extractOne<O> : O
-        ) :
+    /**
+     * Handle Objects as schemas, without Joi.object at the root.
+     * It needs to come first than mappedSchema.
+     * It is difficult to avoid it to be inferred from extends clause.
+     */
+    T extends mappedSchemaMap ? extractMap<T> :
 
-        /**
-         * Handle Objects as schemas, without Joi.object at the root.
-         * It needs to come first than mappedSchema.
-         * It is difficult to avoid it to be inferred from extends clause.
-         */
-        T extends mappedSchemaMap ? extractMap<T> :
+    /**
+     * This is the base case for every schema implemented
+     */
+    T extends mappedSchema ? extractOne<T> :
 
-        /**
-         * This is the base case for every schema implemented
-         */
-        T extends mappedSchema ? extractOne<T> :
-
-        /**
-         * Default case to handle primitives and schemas
-         */
-        extractOne<T>;
+    /**
+     * Default case to handle primitives and schemas
+     */
+    extractOne<T>;
 }
