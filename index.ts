@@ -417,6 +417,7 @@ declare module '@hapi/joi' {
     T extends AlternativesSchema<infer O> ? maybeExtractBox<O> :
     T extends mappedSchemaMap<infer O> ? maybeExtractBox<O> :
     T extends ExtendedAnySchema<infer O> ? maybeExtractBox<O> :
+    T extends AnySchema ? any :	
     any;
 
   // prettier-ignore
