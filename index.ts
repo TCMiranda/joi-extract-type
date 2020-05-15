@@ -34,7 +34,8 @@ declare module '@hapi/joi' {
     | FunctionSchema<T>
     | ArraySchema<T>
     | ObjectSchema<T>
-    | AlternativesSchema<T>;
+    | AlternativesSchema<T>
+    | ExtendedAnySchema<T>;
 
   // Base types
   type primitiveType = string | number | boolean | Function | Date | undefined | null | void;
@@ -124,6 +125,26 @@ declare module '@hapi/joi' {
   }
 
   export function number<T extends number>(): NumberSchema<Box<extractType<T>, false>>;
+
+  export interface ExtendedAnySchema<N extends Box<any, boolean> = any> {
+    default<T extends any>(value: T, description?: string): ExtendedAnySchema<Box<N['T'] | T, true>>;
+    default(value: any, description?: string): this;
+    default(): this;
+
+    valid<T extends any>(...values: T[]): ExtendedAnySchema<BoxType<N, typeof values[any]>>;
+    valid<T extends any>(values: T[]): ExtendedAnySchema<BoxType<N, typeof values[any]>>;
+    valid(...values: any[]): this;
+    valid(values: any[]): this;
+
+    required(): ExtendedAnySchema<BoxReq<N, true>>;
+    required(): this;
+    exist(): ExtendedAnySchema<BoxReq<N, true>>;
+    exist(): this;
+    optional(): ExtendedAnySchema<BoxReq<N, false>>;
+    optional(): this;
+  }
+
+  export function any<T extends any>(): ExtendedAnySchema<Box<extractType<T>, false>>;
 
   /**
    * Boolean: extraction decorated schema
@@ -395,7 +416,7 @@ declare module '@hapi/joi' {
     /** Supports Joi.alternatives(Schema1, schema2, ...) */
     T extends AlternativesSchema<infer O> ? maybeExtractBox<O> :
     T extends mappedSchemaMap<infer O> ? maybeExtractBox<O> :
-    T extends AnySchema ? any :
+    T extends ExtendedAnySchema<infer O> ? maybeExtractBox<O> :
     any;
 
   // prettier-ignore
