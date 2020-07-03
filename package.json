@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/TCMiranda/joi-extract-type#readme",
   "devDependencies": {
-    "typescript": "^3.2.2"
+    "typescript": "^3.9.6"
   },
   "peerDependencies": {
     "@hapi/joi": "~15"

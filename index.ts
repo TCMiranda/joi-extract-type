@@ -228,7 +228,7 @@ declare module '@hapi/joi' {
    * Object: extraction decorated schema
    */
   export interface ObjectSchema<N = null> extends AnySchema {
-    default<T extends any>(
+    default<T extends mappedSchemaMap>(
       value: T,
       description?: string
     ): ObjectSchema<BoxReq<BoxUnion<N, extractType<T>>, true>>;
@@ -353,7 +353,7 @@ declare module '@hapi/joi' {
   ): AlternativesSchema<Box<extractType<typeof alts[number]>, false>>;
 
   // Required | Optional properties engine
-  type FilterVoid<T extends string | number | symbol, O extends any> = {
+  type FilterVoid<T extends string | number | symbol, O extends MarkRequired<any, boolean>> = {
     [K in T extends (string | number | symbol)
       ? (O[T] extends (null | undefined | void) ? never : T)
       : never]: O[K];
@@ -369,8 +369,9 @@ declare module '@hapi/joi' {
   type Optional<T> = FilterVoid<keyof T, MarkRequired<T, false>>;
 
   type extractMap<T extends mappedSchemaMap> = Map<
-    { [K in keyof Optional<T>]?: extractType<T[K]> } &
-      { [K in keyof Required<T>]: extractType<T[K]> }
+    { [K in keyof Optional<T>]?: extractType<T[K]> }
+  > & Map<
+    { [K in keyof Required<T>]: extractType<T[K]> }
   >;
 
   type maybeExtractBox<T> = T extends Box<infer O, infer R> ? O : T;
@@ -406,7 +407,9 @@ declare module '@hapi/joi' {
      * ```
      */
     T extends Array<infer O> ? (
-        O extends mappedSchema ? extractOne<O> : O
+        O extends SchemaLike ? extractOne<O> :
+        O extends BoxedPrimitive ? extractOne<O> :
+        O
     ) :
 
     /**
@@ -419,7 +422,8 @@ declare module '@hapi/joi' {
     /**
      * This is the base case for every schema implemented
      */
-    T extends mappedSchema ? extractOne<T> :
+    T extends SchemaLike ? extractOne<T> :
+    T extends BoxedPrimitive ? extractOne<T> :
 
     /**
      * Default case to handle primitives and schemas
