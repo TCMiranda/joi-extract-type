@@ -28,9 +28,7 @@ const userAsObject = {
   full_name: full_name.required(),
   short_desc: Joi.string(),
   is_enabled,
-  has_credentials: Joi.boolean()
-    .valid(true)
-    .required(),
+  has_credentials: Joi.boolean().valid(true).required(),
   created_at,
   priority,
 };
@@ -87,9 +85,7 @@ export const jobOperatorRoleSchema = Joi.object({
   index: Joi.number(),
   parent_index: Joi.number().required(),
   role: Joi.string().valid('recruiter', 'requester'),
-  pipeline_rules: Joi.array()
-    .items(rule)
-    .required(),
+  pipeline_rules: Joi.array().items(rule).required(),
 });
 type extractComplexType = Joi.extractType<typeof jobOperatorRoleSchema>;
 export const extractedComplexType: extractComplexType = {
@@ -108,7 +104,7 @@ export const usingDefaultWithProps = Joi.object({
   date_prop_with_default: Joi.date().default(new Date()),
   array_prop_with_default: Joi.array().default([5]),
   object_prop_with_default: Joi.object({ number: Joi.number() }).default({ string: Joi.string() }),
-})
+});
 type usingDefaultWithPropsType = Joi.extractType<typeof usingDefaultWithProps>;
 export const extractedUsingDefaultWithProps: usingDefaultWithPropsType = {
   number_prop_with_default: 20,
@@ -119,16 +115,13 @@ export const extractedUsingDefaultWithProps: usingDefaultWithPropsType = {
   object_prop_with_default: { number: 5 },
 };
 
-export const extractedComplexTypeValidationResponse = Joi.validate(
-  { },
-  jobOperatorRoleSchema
-)
+export const extractedComplexTypeValidationResponse = Joi.validate({}, jobOperatorRoleSchema);
 
 const appendedJobOperatorRoleSchema = jobOperatorRoleSchema.append({
-  excluded: Joi.boolean()
-})
+  excluded: Joi.boolean(),
+});
 
-type extractAppendedSchema = Joi.extractType<typeof appendedJobOperatorRoleSchema>
+type extractAppendedSchema = Joi.extractType<typeof appendedJobOperatorRoleSchema>;
 export const extractedAppended: extractAppendedSchema = {
   ...extractedComplexType,
   excluded: true,
@@ -189,9 +182,7 @@ export const extractRequiredAltAugmented: extractedRequiredAltAugmented = {
 
 const string_array_schema = [
   Joi.string().default('test' as 'test'),
-  Joi.array()
-    .items([Joi.string(), Joi.number()])
-    .valid('string', 2), // TODO overwrite valid on ArraySchema
+  Joi.array().items([Joi.string(), Joi.number()]).valid('string', 2), // TODO overwrite valid on ArraySchema
 ];
 type extractStringArray = Joi.extractType<typeof string_array_schema>;
 export const extractStringArrayString: extractStringArray = 'string';
@@ -227,33 +218,12 @@ export const validationOverwrittenReturn: strictEnum = Joi.validate(
   }
 );
 
-type UsingOptionalType = {
-  string_required: string;
-  string_optional?: string;
-  number_required: number;
-  number_optional?: number;
-  boolean_required: boolean;
-  boolean_optional?: boolean;
-  function_required: Function;
-  function_optional?: Function;
-  date_required: Date;
-  date_optional?: Date;
-  anything_required: any;
-  anything_optional?: any;
-};
-export const usingOptionalSchema = Joi.object({
-  string_required: Joi.string().required(),
-  string_optional: Joi.string(),
-  number_required: Joi.number().required(),
-  number_optional: Joi.number(),
-  boolean_required: Joi.boolean().required(),
-  boolean_optional: Joi.boolean(),
-  function_required: Joi.func().required(),
-  function_optional: Joi.func(),
-  date_required: Joi.date().required(),
-  date_optional: Joi.date(),
-  anything_required: Joi.any().required(),
-  anything_optional: Joi.any(),
-});
-export const a: UsingOptionalType = null as Joi.extractType<typeof usingOptionalSchema>;
-export const b: Joi.extractType<typeof usingOptionalSchema> = null as UsingOptionalType;
+export const anyRequired = Joi.any().required();
+export const anyOptional = Joi.any();
+export const anyTestSchema = { anyRequired, anyOptional };
+type extractedAnyTest = Joi.extractType<typeof anyTestSchema>;
+
+export let anyTests: extractedAnyTest;
+anyTests = { anyRequired: 'test', anyOptional: 'test' };
+anyTests = { anyRequired: 'test' };
+anyTests = { anyRequired: 123, anyOptional: 123 };
