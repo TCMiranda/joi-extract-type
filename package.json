@@ -1,6 +1,6 @@
 {
   "name": "joi-extract-type",
-  "version": "15.0.4",
+  "version": "15.0.5",
   "description": "Provides native type extraction from Joi schemas for Typescript",
   "main": "dist/index.js",
   "scripts": {
