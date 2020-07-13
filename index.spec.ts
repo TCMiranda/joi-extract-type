@@ -270,3 +270,22 @@ export let anyTests: extractedAnyTest;
 anyTests = { anyRequired: 'test', anyOptional: 'test' };
 anyTests = { anyRequired: 'test' };
 anyTests = { anyRequired: 123, anyOptional: 123 };
+
+// Test for issue #27
+const nestedObjSchema = Joi.object()
+  .required()
+  .keys({
+    nested: Joi.object().required().keys({
+      foo: Joi.string().required(),
+    }),
+    opt: Joi.object().keys({
+      bar: Joi.string().required(),
+    }),
+  });
+
+type extractNestedObjSchema = Joi.extractType<typeof nestedObjSchema>;
+export const extractedNestedObjSchema: extractNestedObjSchema = {
+  nested: {
+    foo: 'string',
+  },
+};

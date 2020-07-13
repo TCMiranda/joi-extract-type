@@ -29,6 +29,7 @@ declare module '@hapi/joi' {
   // Operators
   type BoxType<B, nT> = B extends Box<infer oT, infer oR> ? Box<nT, oR> : B;
   type BoxUnion<B, nT> = B extends Box<infer oT, infer oR> ? Box<oT | nT, oR> : B;
+  type BoxIntersection<B, nT> = B extends Box<infer oT, infer oR> ? Box<oT & nT, oR> : B;
   type BoxReq<B, nR extends boolean> = B extends Box<infer oT, infer oR> ? Box<oT, nR> : B;
 
   type BoxSchema = Box<any, boolean>;
@@ -368,43 +369,32 @@ declare module '@hapi/joi' {
 
     keys<T extends mappedSchemaMap>(
       schema: T
-    ): this extends BoxObjectSchema<infer O>
-      ? O extends Box<infer oT, infer oR>
-        ? BoxObjectSchema<BoxType<O, oT & extractMap<T>>>
-        : BoxObjectSchema<Box<extractMap<T>, false>>
-      : BoxObjectSchema<Box<extractMap<T>, false>>;
+    ): this extends BoxObjectSchema<infer B>
+      ? BoxObjectSchema<BoxIntersection<B, extractMap<T>>>
+      : never;
     keys(schema?: SchemaMap): this;
+
+    append<T extends mappedSchemaMap>(
+      schema: T
+    ): this extends BoxObjectSchema<infer B>
+      ? BoxObjectSchema<BoxIntersection<B, extractMap<T>>>
+      : never;
+    append(schema?: SchemaMap): this;
 
     pattern<S extends BoxStringSchema<any>, T extends mappedSchema>(
       pattern: S,
       schema: T
-    ): this extends BoxObjectSchema<infer O>
-      ? O extends Box<infer oT, infer oR>
-        ? BoxObjectSchema<BoxType<O, oT | extractMap<{ [key in extractType<S>]: T }>>>
-        : BoxObjectSchema<Box<extractMap<{ [key in extractType<S>]: T }>, false>>
-      : BoxObjectSchema<Box<extractMap<{ [key in extractType<S>]: T }>, false>>;
-
+    ): this extends BoxObjectSchema<infer B>
+      ? BoxObjectSchema<BoxIntersection<B, extractMap<{ [key in extractType<S>]: T }>>>
+      : never;
     pattern<T extends mappedSchema>(
       pattern: RegExp,
       schema: T
-    ): this extends BoxObjectSchema<infer O>
-      ? O extends Box<infer oT, infer oR>
-        ? BoxObjectSchema<BoxType<O, oT | extractMap<{ [key: string]: T }>>>
-        : BoxObjectSchema<Box<extractMap<{ [key: string]: T }>, false>>
-      : BoxObjectSchema<Box<extractMap<{ [key: string]: T }>, false>>;
+    ): this extends BoxObjectSchema<infer B>
+      ? BoxObjectSchema<BoxIntersection<B, extractMap<{ [key: string]: T }>>>
+      : never;
 
     pattern(pattern: RegExp | SchemaLike, schema: SchemaLike): this;
-
-    append<T extends mappedSchemaMap | null | undefined>(
-      schema: T
-    ): T extends mappedSchemaMap
-      ? this extends BoxObjectSchema<infer O>
-        ? O extends Box<infer oT, infer oR>
-          ? BoxObjectSchema<BoxType<O, oT & extractMap<T>>>
-          : BoxObjectSchema<Box<extractMap<T>, false>>
-        : BoxObjectSchema<Box<extractMap<T>, false>>
-      : this;
-    append(schema?: SchemaMap): this;
 
     required(): this extends BoxObjectSchema<infer B> ? BoxObjectSchema<BoxReq<B, true>> : never;
     required(): this;
