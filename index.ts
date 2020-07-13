@@ -29,6 +29,7 @@ declare module '@hapi/joi' {
    * Every Schema that implements the Box to allow the extraction
    */
   type BoxedPrimitive<T extends BoxSchema = any> =
+    | BoxAnySchema<T>
     | BoxStringSchema<T>
     | BoxNumberSchema<T>
     | BoxBooleanSchema<T>
@@ -79,6 +80,40 @@ declare module '@hapi/joi' {
   // when(ref: Schema, options: WhenSchemaOptions): BoxAlternativesSchema;
 
   // TODO: see if .default union makes sense;
+
+  export interface BoxAnySchema<N extends Box<any, boolean> = any> {
+    __schemaTypeLiteral: 'BoxAnySchema';
+
+    default<T>(
+      value: T,
+      description?: string
+    ): this extends BoxAnySchema<infer B> ? BoxAnySchema<BoxUnion<B, T>> : never;
+    default(value: any, description?: string): this;
+    default(): this;
+
+    allow<T>(
+      ...values: T[]
+    ): this extends BoxAnySchema<infer B> ? BoxAnySchema<BoxUnion<B, T>> : never;
+    allow<T>(
+      values: T[]
+    ): this extends BoxAnySchema<infer B> ? BoxAnySchema<BoxUnion<B, T>> : never;
+    allow(...values: any[]): this;
+    allow(values: any[]): this;
+
+    valid<T>(
+      ...values: T[]
+    ): this extends BoxAnySchema<infer B> ? BoxAnySchema<BoxType<B, T>> : never;
+    valid<T>(values: T[]): this extends BoxAnySchema<infer B> ? BoxAnySchema<BoxType<B, T>> : never;
+    valid(...values: any[]): this;
+    valid(values: any[]): this;
+
+    required(): this extends BoxAnySchema<infer B> ? BoxAnySchema<BoxReq<B, true>> : never;
+    required(): this;
+    exist(): this extends BoxAnySchema<infer B> ? BoxAnySchema<BoxReq<B, true>> : never;
+    exist(): this;
+    optional(): this extends BoxAnySchema<infer B> ? BoxAnySchema<BoxReq<B, false>> : never;
+    optional(): this;
+  }
 
   /**
    * String: extraction decorated schema
@@ -439,6 +474,8 @@ declare module '@hapi/joi' {
   }
 
   // Factory methods.
+  export function any<T extends any>(): BoxAnySchema<Box<T, false>>;
+
   export function string<T extends string>(): BoxStringSchema<Box<T, false>>;
 
   export function number<T extends number>(): BoxNumberSchema<Box<T, false>>;
@@ -496,6 +533,7 @@ declare module '@hapi/joi' {
     T extends primitiveType ? T :
 
     /** Holds the extracted type */
+    T extends BoxAnySchema<infer O> ? maybeExtractBox<O> :
     T extends BoxBooleanSchema<infer O> ? maybeExtractBox<O> :
     T extends BoxStringSchema<infer O> ? maybeExtractBox<O> :
     T extends BoxNumberSchema<infer O> ? maybeExtractBox<O> :

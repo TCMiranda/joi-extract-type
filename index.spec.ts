@@ -254,3 +254,13 @@ export const extractedAllNullable: extractAllNullable = {
   nullableObject: null,
   nullableAlt: null,
 };
+
+export const anyRequired = Joi.any().required();
+export const anyOptional = Joi.any();
+export const anyTestSchema = { anyRequired, anyOptional };
+type extractedAnyTest = Joi.extractType<typeof anyTestSchema>;
+
+export let anyTests: extractedAnyTest;
+anyTests = { anyRequired: 'test', anyOptional: 'test' };
+anyTests = { anyRequired: 'test' };
+anyTests = { anyRequired: 123, anyOptional: 123 };
