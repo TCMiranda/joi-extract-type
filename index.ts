@@ -1,6 +1,6 @@
 /** @format */
 
-import '@hapi/joi';
+import * as Joi from '@hapi/joi';
 
 /**
  * Helpers
@@ -8,6 +8,14 @@ import '@hapi/joi';
 type ArrayType<T> = T extends (infer U)[] ? U : never;
 
 declare module '@hapi/joi' {
+  /**
+   * Allow extend() to use Joi types by default
+   */
+  export function extend(
+    extension: Extension | Extension[],
+    ...extensions: Array<Extension | Extension[]>
+  ): typeof Joi;
+
   /**
    * Field requirements interface
    */
