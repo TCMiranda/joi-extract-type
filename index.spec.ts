@@ -289,3 +289,15 @@ export const extractedNestedObjSchema: extractNestedObjSchema = {
     foo: 'string',
   },
 };
+
+// Test for issue #36
+export const stdSchemaMethods = [
+  Joi.any().tags('tags').label('any'),
+  Joi.string().tags('tags').label('string'),
+  Joi.boolean().tags('tags').label('boolean'),
+  Joi.number().tags('tags').label('number'),
+  Joi.date().tags('tags').label('date'),
+  Joi.object().tags('tags').label('object'),
+  Joi.array().tags('tags').label('array'),
+  Joi.alt().tags('tags').label('alt'),
+];
