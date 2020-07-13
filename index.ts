@@ -90,7 +90,7 @@ declare module '@hapi/joi' {
 
   // TODO: see if .default union makes sense;
 
-  export interface BoxAnySchema<N extends Box<any, boolean> = any> {
+  export interface BoxAnySchema<N extends Box<any, boolean>> extends AnySchema {
     __schemaTypeLiteral: 'BoxAnySchema';
 
     default<T>(
@@ -519,7 +519,7 @@ declare module '@hapi/joi' {
   };
 
   // prettier-ignore
-  type extractMap<T extends mappedSchemaMap> = 
+  type extractMap<T extends mappedSchemaMap> =
     { [K in keyof Optional<T>]?: extractType<T[K]> } &
     { [K in keyof Required<T>]: extractType<T[K]> };
 
@@ -540,7 +540,7 @@ declare module '@hapi/joi' {
     T extends BoxArraySchema<infer O> ? maybeExtractBox<O>[] :
     T extends BoxObjectSchema<infer O> ? maybeExtractBox<O> :
     T extends BoxAlternativesSchema<infer O> ? maybeExtractBox<O> :
-    
+
     T extends AnySchema ? any :
     any;
 
