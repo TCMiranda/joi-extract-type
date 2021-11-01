@@ -1,13 +1,31 @@
-/** @format */
-
-import * as Joi from '@hapi/joi';
+import Joi, {
+  AlternativesSchema,
+  AnySchema,
+  ArraySchema,
+  BooleanSchema,
+  DateSchema,
+  Extension,
+  FunctionSchema,
+  NumberSchema,
+  ObjectSchema,
+  Reference,
+  Schema,
+  SchemaLike,
+  SchemaMap,
+  StringSchema,
+  ValidationError,
+  ValidationOptions,
+  ValidationResult,
+  WhenOptions,
+  WhenSchemaOptions,
+} from 'joi';
 
 /**
  * Helpers
  */
 type ArrayType<T> = T extends (infer U)[] ? U : never;
 
-declare module '@hapi/joi' {
+declare module JoiExtractType {
   /**
    * Allow extend() to use Joi types by default
    */
@@ -62,12 +80,12 @@ declare module '@hapi/joi' {
   export function validate<T, S extends mappedSchemaMap>(
     value: T,
     schema: S
-  ): ValidationResult<extendsGuard<T, extractType<S>>>;
+  ): ValidationResult;
   export function validate<T, S extends mappedSchemaMap>(
     value: T,
     schema: S,
     options: ValidationOptions
-  ): ValidationResult<extendsGuard<T, extractType<S>>>;
+  ): ValidationResult;
   export function validate<T, R, S extends mappedSchemaMap>(
     value: T,
     schema: S,
@@ -578,3 +596,5 @@ declare module '@hapi/joi' {
      */
     extractOne<T>;
 }
+
+export default JoiExtractType;

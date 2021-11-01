@@ -1,12 +1,12 @@
 /** @format */
 
-import * as Joi from 'joi';
+import JoiExtractType from './index';
 import { jobOperatorRoleSchema } from './index.spec';
 
-export type expectedType = Joi.extractType<typeof jobOperatorRoleSchema>;
+export type expectedType = JoiExtractType.extractType<typeof jobOperatorRoleSchema>;
 
 export const response = ((unpredictableData: expectedType) => {
-  const validation = Joi.validate(unpredictableData, jobOperatorRoleSchema);
+  const validation = unpredictableData.validate(jobOperatorRoleSchema);
 
   if (!validation.error) return validation.value;
 })(undefined);

@@ -41,14 +41,14 @@ Import the library and patch Joi's typings:
 
 ```ts
 import * as Joi from '@hapi/joi';
-import 'joi-extract-type';
+import JoiExtractType from 'joi-extract-type';
 ```
 
 Create the schemas and use `Joi.extractType` to infer the type:
 
 ```ts
 const is_enabled = Joi.boolean();
-type extractBoolean = Joi.extractType<typeof is_enabled>;
+type extractBoolean = JoiExtractType.extractType<typeof is_enabled>;
 export const extractedBoolean: extractBoolean = true;
 ```
 
@@ -58,30 +58,30 @@ The following code is copied from this library spec, which compiles the code wit
 
 ```ts
 const is_enabled = Joi.boolean();
-type extractBoolean = Joi.extractType<typeof is_enabled>;
+type extractBoolean = JoiExtractType.extractType<typeof is_enabled>;
 export const extractedBoolean: extractBoolean = true;
 
 const full_name = Joi.string();
-type extractString = Joi.extractType<typeof full_name>;
+type extractString = JoiExtractType.extractType<typeof full_name>;
 export const extractedString: extractString = 'string';
 
 const user = Joi.object({ full_name, is_enabled });
-type extractObject = Joi.extractType<typeof user>;
+type extractObject = JoiExtractType.extractType<typeof user>;
 export const extractedObject: extractObject = {
   full_name: extractedString,
   is_enabled: extractedBoolean,
 };
 
 const roles = Joi.array().items(Joi.string());
-type extractArray = Joi.extractType<typeof roles>;
+type extractArray = JoiExtractType.extractType<typeof roles>;
 export const extractedArray: extractArray = ['admin'];
 
 const apply = Joi.array().items(Joi.object({ id: Joi.string() }));
-type extractApply = Joi.extractType<typeof apply>;
+type extractApply = JoiExtractType.extractType<typeof apply>;
 export const extractedApply: extractApply = [{ id: '3' }, { id: '4' }];
 
 const rule = Joi.object({ apply });
-type extractRule = Joi.extractType<typeof rule>;
+type extractRule = JoiExtractType.extractType<typeof rule>;
 export const extractedRule: extractRule = { apply: extractedApply };
 
 export const jobOperatorRoleSchema = Joi.object({
@@ -91,7 +91,7 @@ export const jobOperatorRoleSchema = Joi.object({
   role: Joi.string().valid(['recruiter', 'requester']),
   pipeline_rules: Joi.array().items(rule),
 });
-type extractComplexType = Joi.extractType<typeof jobOperatorRoleSchema>;
+type extractComplexType = JoiExtractType.extractType<typeof jobOperatorRoleSchema>;
 export const extractedComplexType: extractComplexType = {
   id: '2015',
   user_id: '102',
@@ -101,7 +101,7 @@ export const extractedComplexType: extractComplexType = {
 };
 
 // typeof extractedComplexType
-// const extractedComplexType: Joi.extractMap<{
+// const extractedComplexType: JoiExtractType.extractMap<{
 //     id: Joi.StringSchema;
 //     user_id: Joi.StringSchema;
 //     job_id: Joi.StringSchema;

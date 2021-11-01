@@ -1,11 +1,12 @@
 {
   "name": "joi-extract-type",
-  "version": "15.0.8",
+  "version": "16.0.0",
   "description": "Provides native type extraction from Joi schemas for Typescript",
   "main": "dist/index.js",
   "scripts": {
     "prepare": "rimraf dist && tsc",
-    "test": "tsc --build ./tsconfig.json"
+    "build": "tsc",
+    "test": "tsc --build ./tsconfig.spec.json"
   },
   "repository": {
     "type": "git",
@@ -24,14 +25,13 @@
   },
   "homepage": "https://github.com/TCMiranda/joi-extract-type#readme",
   "devDependencies": {
-    "typescript": "^3.9.6",
-    "rimraf": "^3.0.2"
+    "rimraf": "^3.0.2",
+    "typescript": "^3.9.6"
   },
   "peerDependencies": {
-    "@hapi/joi": "~15"
+    "joi": "^17.4.2"
   },
   "dependencies": {
-    "@hapi/joi": "~15",
-    "@types/hapi__joi": "~15"
+    "joi": "^17.4.2"
   }
 }
