@@ -2,7 +2,7 @@
 
 # joi-extract-type
 
-Provides native type extraction from [Joi](https://github.com/hapijs/joi) Schemas for Typescript.
+Provides native type extraction from [Joi](https://github.com/sideway/joi) Schemas for Typescript.
 
 ---
 
@@ -13,7 +13,7 @@ This library enhances Joi interfaces to provides an utility to infer the type fr
 **Why should you use it**
 
 - Avoid duplication from Joi Schemas and application interfaces
-- Port javascript applications using [Joi](https://github.com/hapijs/joi) to typescript easily
+- Port javascript applications using [Joi](https://github.com/sideway/joi) to typescript easily
 - Does not requires changes to already defined Schemas
 
 **Limitation**
@@ -40,15 +40,15 @@ npm i --save joi-extract-type@ts2-1
 Import the library and patch Joi's typings:
 
 ```ts
-import * as Joi from '@hapi/joi';
-import JoiExtractType from 'joi-extract-type';
+import Joi from 'joi';
+import extractType from 'joi-extract-type';
 ```
 
-Create the schemas and use `Joi.extractType` to infer the type:
+Create the schemas and use `extractType` to infer the type:
 
 ```ts
 const is_enabled = Joi.boolean();
-type extractBoolean = JoiExtractType.extractType<typeof is_enabled>;
+type extractBoolean = extractType<typeof is_enabled>;
 export const extractedBoolean: extractBoolean = true;
 ```
 
@@ -58,30 +58,30 @@ The following code is copied from this library spec, which compiles the code wit
 
 ```ts
 const is_enabled = Joi.boolean();
-type extractBoolean = JoiExtractType.extractType<typeof is_enabled>;
+type extractBoolean = extractType<typeof is_enabled>;
 export const extractedBoolean: extractBoolean = true;
 
 const full_name = Joi.string();
-type extractString = JoiExtractType.extractType<typeof full_name>;
+type extractString = extractType<typeof full_name>;
 export const extractedString: extractString = 'string';
 
 const user = Joi.object({ full_name, is_enabled });
-type extractObject = JoiExtractType.extractType<typeof user>;
+type extractObject = extractType<typeof user>;
 export const extractedObject: extractObject = {
   full_name: extractedString,
   is_enabled: extractedBoolean,
 };
 
 const roles = Joi.array().items(Joi.string());
-type extractArray = JoiExtractType.extractType<typeof roles>;
+type extractArray = extractType<typeof roles>;
 export const extractedArray: extractArray = ['admin'];
 
 const apply = Joi.array().items(Joi.object({ id: Joi.string() }));
-type extractApply = JoiExtractType.extractType<typeof apply>;
+type extractApply = extractType<typeof apply>;
 export const extractedApply: extractApply = [{ id: '3' }, { id: '4' }];
 
 const rule = Joi.object({ apply });
-type extractRule = JoiExtractType.extractType<typeof rule>;
+type extractRule = extractType<typeof rule>;
 export const extractedRule: extractRule = { apply: extractedApply };
 
 export const jobOperatorRoleSchema = Joi.object({
@@ -91,7 +91,7 @@ export const jobOperatorRoleSchema = Joi.object({
   role: Joi.string().valid(['recruiter', 'requester']),
   pipeline_rules: Joi.array().items(rule),
 });
-type extractComplexType = JoiExtractType.extractType<typeof jobOperatorRoleSchema>;
+type extractComplexType = extractType<typeof jobOperatorRoleSchema>;
 export const extractedComplexType: extractComplexType = {
   id: '2015',
   user_id: '102',
