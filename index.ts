@@ -622,76 +622,78 @@ export type extractType<T extends mappedSchema> =
            */
           extractOne<T>;
 
-export declare module Validate {
-  /**
-   * Validation: extraction decorated methods
-   */
-  export function validate<T, S extends mappedSchemaMap>(
-    value: T,
-    schema: S,
-  ): ValidationResult;
-  export function validate<T, S extends mappedSchemaMap>(
-    value: T,
-    schema: S,
-    options: ValidationOptions,
-  ): ValidationResult;
-  export function validate<T, R, S extends mappedSchemaMap>(
-    value: T,
-    schema: S,
-    options: ValidationOptions,
-    callback: (err: ValidationError, value: extendsGuard<T, extractType<S>>) => R,
-  ): R;
-  export function validate<T, R, S extends mappedSchemaMap>(
-    value: T,
-    schema: S,
-    callback: (err: ValidationError, value: extendsGuard<T, extractType<S>>) => R,
-  ): R;
-}
+/**
+ * Validation: extraction decorated methods
+ */
+export declare function validate<T, S extends mappedSchemaMap>(
+  value: T,
+  schema: S,
+): ValidationResult;
 
-export declare module Extend {
-  /**
-   * Allow extend() to use Joi types by default
-   */
-  export function extend(
-    extension: Extension | Extension[],
-    ...extensions: Array<Extension | Extension[]>
-  ): typeof Joi;
-}
+export declare function validate<T, S extends mappedSchemaMap>(
+  value: T,
+  schema: S,
+): ValidationResult;
 
-export declare module FactoryMethods {
-  // Factory methods.
-  export function any<T extends any>(): BoxAnySchema<Box<T, false>>;
+export declare function validate<T, S extends mappedSchemaMap>(
+  value: T,
+  schema: S,
+  options: ValidationOptions,
+): ValidationResult;
 
-  export function string<T extends string>(): BoxStringSchema<Box<T, false>>;
+export declare function validate<T, R, S extends mappedSchemaMap>(
+  value: T,
+  schema: S,
+  options: ValidationOptions,
+  callback: (err: ValidationError, value: extendsGuard<T, extractType<S>>) => R,
+): R;
 
-  export function number<T extends number>(): BoxNumberSchema<Box<T, false>>;
+export declare function validate<T, R, S extends mappedSchemaMap>(
+  value: T,
+  schema: S,
+  callback: (err: ValidationError, value: extendsGuard<T, extractType<S>>) => R,
+): R;
 
-  export function boolean<T extends boolean>(): BoxBooleanSchema<Box<T, false>>;
+/**
+ * Allow extend() to use Joi types by default
+ */
+export declare function extend(
+  extension: Extension | Extension[],
+  ...extensions: Array<Extension | Extension[]>
+): typeof Joi;
 
-  export function date<T extends Date>(): BoxDateSchema<Box<T, false>>;
+// Factory methods.
+export declare function any<T extends any>(): BoxAnySchema<Box<T, false>>;
 
-  export function func<T extends Function>(): BoxFunctionSchema<Box<T, false>>;
+export declare function string<T extends string>(): BoxStringSchema<Box<T, false>>;
 
-  export function array(): BoxArraySchema<Box<never, false>>;
+export declare function number<T extends number>(): BoxNumberSchema<Box<T, false>>;
 
-  export function object<T extends mappedSchemaMap>(
-    schema?: T,
-  ): BoxObjectSchema<Box<extractMap<T>, false>>;
+export declare function boolean<T extends boolean>(): BoxBooleanSchema<Box<T, false>>;
 
-  export function alternatives<T extends mappedSchema[]>(
-    ...alts: T
-  ): BoxAlternativesSchema<Box<extractType<typeof alts[number]>, false>>;
-  export function alternatives<T extends mappedSchema[]>(
-    alts: T,
-  ): BoxAlternativesSchema<Box<extractType<typeof alts[number]>, false>>;
+export declare function date<T extends Date>(): BoxDateSchema<Box<T, false>>;
 
-  export function alt<T extends mappedSchema[]>(
-    ...alts: T
-  ): BoxAlternativesSchema<Box<extractType<typeof alts[number]>, false>>;
-  export function alt<T extends mappedSchema[]>(
-    alts: T,
-  ): BoxAlternativesSchema<Box<extractType<typeof alts[number]>, false>>;
-}
+export declare function func<T extends Function>(): BoxFunctionSchema<Box<T, false>>;
+
+export declare function array(): BoxArraySchema<Box<never, false>>;
+
+export declare function object<T extends mappedSchemaMap>(
+  schema?: T,
+): BoxObjectSchema<Box<extractMap<T>, false>>;
+
+export declare function alternatives<T extends mappedSchema[]>(
+  ...alts: T
+): BoxAlternativesSchema<Box<extractType<typeof alts[number]>, false>>;
+export declare function alternatives<T extends mappedSchema[]>(
+  alts: T,
+): BoxAlternativesSchema<Box<extractType<typeof alts[number]>, false>>;
+
+export declare function alt<T extends mappedSchema[]>(
+  ...alts: T
+): BoxAlternativesSchema<Box<extractType<typeof alts[number]>, false>>;
+export declare function alt<T extends mappedSchema[]>(
+  alts: T,
+): BoxAlternativesSchema<Box<extractType<typeof alts[number]>, false>>;
 
 // TODO: concat
 // concat(schema: this): this;
