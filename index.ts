@@ -1,6 +1,29 @@
 /** @format */
 
+// @ts-nocheck
+
 import 'joi';
+import {
+  AlternativesSchema,
+  AnySchema,
+  ArraySchema,
+  BooleanSchema,
+  DateSchema,
+  Extension,
+  FunctionSchema,
+  NumberSchema,
+  ObjectSchema,
+  Reference,
+  Schema,
+  SchemaLike,
+  SchemaMap,
+  StringSchema,
+  ValidationError,
+  ValidationOptions,
+  ValidationResult,
+  WhenOptions,
+  WhenSchemaOptions,
+} from 'joi';
 
 declare module 'joi' {
   /**

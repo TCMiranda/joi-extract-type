@@ -8,6 +8,6 @@
     "strict": true,
     "target": "es5"
   },
-  "include": [],
+  "include": ["index.ts"],
   "exclude": ["node_modules", "**/*.spec.ts"]
 }
