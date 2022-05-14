@@ -24,14 +24,15 @@
   },
   "homepage": "https://github.com/TCMiranda/joi-extract-type#readme",
   "devDependencies": {
-    "typescript": "^3.9.6",
-    "rimraf": "^3.0.2"
+    "rimraf": "^3.0.2",
+    "tsd": "^0.20.0",
+    "typescript": "^4.6.4"
   },
   "peerDependencies": {
-    "@hapi/joi": "~15"
+    "joi": "~13"
   },
   "dependencies": {
-    "@hapi/joi": "~15",
-    "@types/hapi__joi": "~15"
+    "@types/joi": "~13",
+    "joi": "~13"
   }
 }

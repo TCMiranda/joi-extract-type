@@ -1,13 +1,13 @@
 /** @format */
 
-import * as Joi from '@hapi/joi';
+import * as Joi from 'joi';
 
 /**
  * Helpers
  */
 type ArrayType<T> = T extends (infer U)[] ? U : never;
 
-declare module '@hapi/joi' {
+declare module 'joi' {
   /**
    * Allow extend() to use Joi types by default
    */
