@@ -1,11 +1,12 @@
 /** @format */
 
 import * as Joi from 'joi';
+// import { ObjectSchema, Schema } from 'joi';
 
 /**
  * Helpers
  */
-type ArrayType<T> = T extends (infer U)[] ? U : never;
+// type ArrayType<T> = T extends (infer U)[] ? U : never;
 
 declare module 'joi' {
   /**
@@ -16,15 +17,10 @@ declare module 'joi' {
   //   ...extensions: Array<Extension | Extension[]>
   // ): typeof Joi;
 
-  type GenericSchema = AnySchemaExtension<any, boolean>;
-
-  // Base types
-  type primitiveType = string | number | boolean | Function | Date | undefined | null | void;
-
   // export type mappedSchema = BoxedPrimitive;
-  export type mappedSchemaMap = { [K: string]: GenericSchema };
+  // export type ExtendedSchemaMap = Record<string, GenericSchema>;
 
-  export type extendsGuard<T, S> = S extends T ? S : T;
+  // export type extendsGuard<T, S> = S extends T ? S : T;
 
   /**
    * Validation: extraction decorated methods
@@ -142,46 +138,39 @@ declare module 'joi' {
    * Object: Object Schema
    */
 
+  interface ExtendedObjectSchema<ValueType = any[], Optional = true>
+    extends AnySchemaExtension<ValueType, Optional>,
+      Omit<OmitAnyKeys<ObjectSchema>, 'keys'> {
+    // keys<T extends ExtendedSchemaMap>(
+    //   schema: T
+    // ): this extends BoxObjectSchema<infer B>
+    //   ? BoxObjectSchema<BoxIntersection<B, extractMap<T>>>
+    //   : never;
+    // keys(schema?: SchemaMap): this;
+  }
+
   // export interface BoxObjectSchema<N extends BoxSchema> extends ObjectSchema {
-  //   __schemaTypeLiteral: 'BoxObjectSchema';
-  //
-  //   default<T extends mappedSchemaMap>(
-  //     value: T,
-  //     description?: string
-  //   ): this extends BoxObjectSchema<infer B> ? BoxObjectSchema<BoxUnion<B, extractType<T>>> : never;
-  //   default(value: any, description?: string): this;
-  //   default(): this;
-  //
-  //   allow<T>(
-  //     ...values: T[]
-  //   ): this extends BoxObjectSchema<infer B> ? BoxObjectSchema<BoxUnion<B, T>> : never;
-  //   allow<T>(
-  //     values: T[]
-  //   ): this extends BoxObjectSchema<infer B> ? BoxObjectSchema<BoxUnion<B, T>> : never;
-  //   allow(...values: any[]): this;
-  //   allow(values: any[]): this;
-  //
-  //   keys<T extends mappedSchemaMap>(
+  //   keys<T extends ExtendedSchemaMap>(
   //     schema: T
   //   ): this extends BoxObjectSchema<infer B>
   //     ? BoxObjectSchema<BoxIntersection<B, extractMap<T>>>
   //     : never;
   //   keys(schema?: SchemaMap): this;
   //
-  //   append<T extends mappedSchemaMap>(
+  //   append<T extends ExtendedSchemaMap>(
   //     schema: T
   //   ): this extends BoxObjectSchema<infer B>
   //     ? BoxObjectSchema<BoxIntersection<B, extractMap<T>>>
   //     : never;
   //   append(schema?: SchemaMap): this;
-
-  //   // TODO: janusz correct this
-  //   // pattern<S extends ExtendedStringSchema, T extends mappedSchema>(
-  //   //   pattern: S,
-  //   //   schema: T
-  //   // ): this extends BoxObjectSchema<infer B>
-  //   //   ? BoxObjectSchema<BoxIntersection<B, extractMap<{ [key in extractType<S>]: T }>>>
-  //   //   : never;
+  //
+  //   //   // TODO: janusz correct this
+  //   //   // pattern<S extends ExtendedStringSchema, T extends mappedSchema>(
+  //   //   //   pattern: S,
+  //   //   //   schema: T
+  //   //   // ): this extends BoxObjectSchema<infer B>
+  //   //   //   ? BoxObjectSchema<BoxIntersection<B, extractMap<{ [key in extractType<S>]: T }>>>
+  //   //   //   : never;
   //   pattern<T extends mappedSchema>(
   //     pattern: RegExp,
   //     schema: T
@@ -190,13 +179,6 @@ declare module 'joi' {
   //     : never;
   //
   //   pattern(pattern: RegExp | SchemaLike, schema: SchemaLike): this;
-  //
-  //   required(): this extends BoxObjectSchema<infer B> ? BoxObjectSchema<BoxReq<B, true>> : never;
-  //   required(): this;
-  //   exist(): this extends BoxObjectSchema<infer B> ? BoxObjectSchema<BoxReq<B, true>> : never;
-  //   exist(): this;
-  //   optional(): this extends BoxObjectSchema<infer B> ? BoxObjectSchema<BoxReq<B, false>> : never;
-  //   optional(): this;
   // }
 
   /**
@@ -300,83 +282,16 @@ declare module 'joi' {
   //   alts: T
   // ): BoxAlternativesSchema<Box<extractType<typeof alts[number]>, false>>;
 
-  // Required | Optional properties engine
-  // prettier-ignore
-  // type Required<T, K = keyof T> = {
-  //   [j in K extends keyof T
-  //     ? T[K] extends BoxedPrimitive<infer B> ? B['R'] extends true ? K : never : never
-  //     : never]: true
-  // };
-  // prettier-ignore
-  // type Optional<T, K = keyof T> = {
-  //   [j in K extends keyof T
-  //     ? T[K] extends BoxedPrimitive<infer B> ? B['R'] extends false ? K : never : never
-  //     : never]: true
-  // };
-
-  // prettier-ignore
-  // type extractMap<T extends mappedSchemaMap> =
-  //   { [K in keyof Optional<T>]?: extractType<T[K]> } &
-  //   { [K in keyof Required<T>]: extractType<T[K]> };
-
-  // type maybeExtractBox<T> = T extends Box<infer O, infer R> ? O : T;
   type pullType<V, O> = O extends false ? V : V | undefined;
+
+  type GenericSchema = AnySchemaExtension<any, boolean>;
+  // type PrimitiveType = string | number | boolean | object | null;
   //
-  // type MapTypes<T extends mappedSchema[]> = {
-  //   [K in keyof T]: T[K] extends BoxedPrimitive ? extractType<T[K]> : never;
-  // };
-
-  // type ArrayType<V> = V extends (infer T)[] ?
-  //   T extends extractOne<T>[] : any[];
+  // type ExtendedSchemaLike = PrimitiveType | GenericSchema | ExtendedSchemaMap;
   //
+  // interface ExtendedSchemaMap {
+  //   [key: string]: ExtendedSchemaLike | ExtendedSchemaLike[];
+  // }
 
-  // type pullArrayType<V, O> = O extends false ? MapTypes<V> : MapTypes<V> | undefined;
-
-  // prettier-ignore
-  type extractOne<T extends GenericSchema> =
-    /** Primitive types */
-    T extends primitiveType ? T :
-
-    /** Holds the extracted type */
-    T extends ExtendedArraySchema<infer V, infer O> ? pullType<V, O> :
-    T extends AnySchemaExtension<infer V, infer O> ? pullType<V, O> :
-    // T extends BoxObjectSchema<infer O> ? maybeExtractBox<O> :
-    // T extends BoxAlternativesSchema<infer O> ? maybeExtractBox<O> :
-
-    T extends AnySchema ? any :
-    any;
-
-  // prettier-ignore
-  export type extractType<T extends GenericSchema> =
-    /**
-     * Hack to support [Schema1, Schema2, ...N] alternatives notation
-     * Can't use extractType directly here because of cycles:
-     * ```
-     * T extends Array<infer O> ? extractType<O> :
-     *                            ^ cycle
-     * ```
-     */
-    // T extends Array<infer O> ? (
-    //   O extends SchemaLike ? extractOne<O> :
-    //   O extends BoxedPrimitive ? extractOne<O> :
-    //   O
-    // ) :
-
-    /**
-     * Handle Objects as schemas, without Joi.object at the root.
-     * It needs to come first than mappedSchema.
-     * It is difficult to avoid it to be inferred from extends clause.
-     */
-    // T extends mappedSchemaMap ? extractMap<T> :
-
-    /**
-     * This is the base case for every schema implemented
-     */
-    T extends SchemaLike ? extractOne<T> :
-    T extends GenericSchema ? extractOne<T> :
-
-    /**
-     * Default case to handle primitives and schemas
-     */
-    extractOne<T>;
+  type extractType<T> = T extends AnySchemaExtension<infer V, infer O> ? pullType<V, O> : T;
 }
