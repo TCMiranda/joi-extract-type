@@ -5,7 +5,8 @@
   "main": "dist/index.js",
   "scripts": {
     "prepare": "rimraf dist && tsc",
-    "test": "tsc --build ./tsconfig.json"
+    "build": "tsc --build ",
+    "watch": "tsc --watch -p ./tsconfig-tests.json"
   },
   "repository": {
     "type": "git",
