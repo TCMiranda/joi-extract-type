@@ -40,7 +40,7 @@ declare module 'joi' {
   type BoxedPrimitive<T extends BoxSchema = any> =
     | BoxAnySchema<T>
     | BoxStringSchema<T>
-    | BoxNumberSchema<T>
+    | BoxNumberSchema
     | BoxBooleanSchema<T>
     | BoxDateSchema<T>
     | BoxFunctionSchema<T>
@@ -166,39 +166,31 @@ declare module 'joi' {
   /**
    * Number: extraction decorated schema
    */
-  export interface BoxNumberSchema<N extends BoxSchema> extends NumberSchema {
+  export interface BoxNumberSchema<ValueType = number, Optional = true> extends NumberSchema {
     __schemaTypeLiteral: 'BoxNumberSchema';
 
-    default<T extends number>(
+    default<T extends ValueType>(value: T, description?: string): BoxNumberSchema<ValueType>;
+    default(): never;
+
+    allow<T>(
+      ...values: T[]
+    ): this extends BoxNumberSchema<infer V, infer O> ? BoxNumberSchema<V | T, O> : never;
+    allow(...values: any[]): never;
+
+    valid<T extends number>(
       value: T,
-      description?: string
-    ): this extends BoxNumberSchema<infer B> ? BoxNumberSchema<BoxUnion<B, T>> : never;
-    default(value: any, description?: string): this;
-    default(): this;
-
-    allow<T>(
       ...values: T[]
-    ): this extends BoxNumberSchema<infer B> ? BoxNumberSchema<BoxUnion<B, T>> : never;
-    allow<T>(
-      values: T[]
-    ): this extends BoxNumberSchema<infer B> ? BoxNumberSchema<BoxUnion<B, T>> : never;
-    allow(...values: any[]): this;
-    allow(values: any[]): this;
+    ): this extends BoxNumberSchema<infer V, infer O> ? BoxNumberSchema<T, O> : never;
+    valid(...values: any[]): never;
 
-    valid<T extends string>(
-      ...values: T[]
-    ): this extends BoxNumberSchema<infer B> ? BoxNumberSchema<BoxType<B, T>> : never;
-    valid<T extends string>(
-      values: T[]
-    ): this extends BoxNumberSchema<infer B> ? BoxNumberSchema<BoxType<B, T>> : never;
-    valid(...values: any[]): this;
-    valid(values: any[]): this;
+    required(): BoxNumberSchema<ValueType, false>;
+    required(): never;
 
-    required(): this extends BoxNumberSchema<infer B> ? BoxNumberSchema<BoxReq<B, true>> : never;
-    required(): this;
-    exist(): this extends BoxNumberSchema<infer B> ? BoxNumberSchema<BoxReq<B, true>> : never;
-    exist(): this;
-    optional(): this extends BoxNumberSchema<infer B> ? BoxNumberSchema<BoxReq<B, false>> : never;
+    // alias of required
+    exist(): BoxNumberSchema<ValueType, false>;
+    exist(): never;
+
+    optional(): BoxNumberSchema<ValueType>;
     optional(): this;
   }
 
@@ -476,7 +468,7 @@ declare module 'joi' {
 
   export function string<T extends string>(): BoxStringSchema<Box<T, false>>;
 
-  export function number<T extends number>(): BoxNumberSchema<Box<T, false>>;
+  export function number<T extends number>(): BoxNumberSchema;
 
   export function boolean<T extends boolean>(): BoxBooleanSchema<Box<T, false>>;
 
@@ -524,6 +516,7 @@ declare module 'joi' {
     { [K in keyof Required<T>]: extractType<T[K]> };
 
   type maybeExtractBox<T> = T extends Box<infer O, infer R> ? O : T;
+  type maybeExtractNew<V, O> = O extends false ? V : V | undefined;
 
   // prettier-ignore
   type extractOne<T extends mappedSchema> =
@@ -534,7 +527,7 @@ declare module 'joi' {
     T extends BoxAnySchema<infer O> ? maybeExtractBox<O> :
     T extends BoxBooleanSchema<infer O> ? maybeExtractBox<O> :
     T extends BoxStringSchema<infer O> ? maybeExtractBox<O> :
-    T extends BoxNumberSchema<infer O> ? maybeExtractBox<O> :
+    T extends BoxNumberSchema<infer V, infer O> ? maybeExtractNew<V, O> :
     T extends BoxDateSchema<infer O> ? maybeExtractBox<O> :
     T extends BoxFunctionSchema<infer O> ? maybeExtractBox<O> :
     T extends BoxArraySchema<infer O> ? maybeExtractBox<O>[] :
