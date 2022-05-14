@@ -1,6 +1,6 @@
 {
-  "name": "joi-extract-type",
-  "version": "15.0.8",
+  "name": "joi-pull-type",
+  "version": "13.0.0",
   "description": "Provides native type extraction from Joi schemas for Typescript",
   "main": "dist/index.js",
   "scripts": {
@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/TCMiranda/joi-extract-type.git"
+    "url": "git+https://github.com/jtwozniak/joi-extract-type.git"
   },
   "keywords": [
     "Joi",
@@ -18,12 +18,12 @@
     "Types",
     "Extraction"
   ],
-  "author": "Janusz Wozniak, in collaboration with Tiago de Carvalho Miranda",
+  "author": "Janusz Wozniak, based on Tiago de Carvalho Miranda",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/TCMiranda/joi-extract-type/issues"
+    "url": "https://github.com/jtwozniak/joi-extract-type/issues"
   },
-  "homepage": "https://github.com/TCMiranda/joi-extract-type#readme",
+  "homepage": "https://github.com/jtwozniak/joi-extract-type#readme",
   "devDependencies": {
     "prettier": "^2.6.2",
     "rimraf": "^3.0.2",
