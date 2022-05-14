@@ -12,7 +12,7 @@ const schema = Joi.array().items(
 type InternalArray = (number | string)[];
 type DesiredType = (InternalArray | string)[] | undefined;
 
-type ExtractedType = Joi.extractType<typeof schema>;
+type ExtractedType = Joi.pullType<typeof schema>;
 type Type = CommonPartType<DesiredType, ExtractedType>;
 
 let v: Type = [];

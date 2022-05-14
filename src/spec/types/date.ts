@@ -8,7 +8,7 @@ import { CommonPartType } from '../copareTypes';
 // as the validation will provide value
 const schema = Joi.date();
 type DesiredType = Date | undefined;
-type ExtractedType = Joi.extractType<typeof schema>;
+type ExtractedType = Joi.pullType<typeof schema>;
 type Type = CommonPartType<DesiredType, ExtractedType>;
 
 let v: Type = new Date();

@@ -58,26 +58,26 @@ declare module 'joi' {
   type AnyKeys = 'allow' | 'default' | 'exist' | 'optional' | 'required' | 'valid';
   type OmitAnyKeys<T> = Omit<T, AnyKeys>;
 
-  interface AnySchemaExtension<ValueType, Optional = true> {
+  interface AnySchemaHelper<ValueType, Optional = true> {
     allow<T>(
       ...values: T[]
-    ): this extends AnySchemaExtension<infer V, infer O> ? AnySchemaExtension<V | T, O> : never;
+    ): this extends AnySchemaHelper<infer V, infer O> ? AnySchemaHelper<V | T, O> : never;
     allow<T>(
       values: T[]
-    ): this extends AnySchemaExtension<infer V, infer O> ? AnySchemaExtension<V | T, O> : never;
+    ): this extends AnySchemaHelper<infer V, infer O> ? AnySchemaHelper<V | T, O> : never;
 
-    default<T extends ValueType>(value: T, description?: string): AnySchemaExtension<ValueType>;
+    default<T extends ValueType>(value: T, description?: string): AnySchemaHelper<ValueType>;
     // alias of required
-    exist(): AnySchemaExtension<ValueType, false>;
-    optional(): AnySchemaExtension<ValueType>;
-    required(): AnySchemaExtension<ValueType, false>;
+    exist(): AnySchemaHelper<ValueType, false>;
+    optional(): AnySchemaHelper<ValueType>;
+    required(): AnySchemaHelper<ValueType, false>;
 
     valid<T extends ValueType>(
       ...values: T[]
-    ): this extends AnySchemaExtension<infer V, infer O> ? AnySchemaExtension<T, O> : never;
+    ): this extends AnySchemaHelper<infer V, infer O> ? AnySchemaHelper<T, O> : never;
     valid<T extends ValueType>(
       values: T[]
-    ): this extends AnySchemaExtension<infer V, infer O> ? AnySchemaExtension<T, O> : never;
+    ): this extends AnySchemaHelper<infer V, infer O> ? AnySchemaHelper<T, O> : never;
   }
 
   /**
@@ -85,27 +85,27 @@ declare module 'joi' {
    */
 
   interface ExtendedAnySchema<V = any, O = true>
-    extends AnySchemaExtension<V, O>,
+    extends AnySchemaHelper<V, O>,
       OmitAnyKeys<AnySchema> {}
 
   interface ExtendedStringSchema<V = string, O = true>
-    extends AnySchemaExtension<V, O>,
+    extends AnySchemaHelper<V, O>,
       OmitAnyKeys<StringSchema> {}
 
   interface ExtendedNumberSchema<V = number, O = true>
-    extends AnySchemaExtension<V, O>,
+    extends AnySchemaHelper<V, O>,
       OmitAnyKeys<NumberSchema> {}
 
   interface ExtendedBooleanSchema<V = boolean, O = true>
-    extends AnySchemaExtension<V, O>,
+    extends AnySchemaHelper<V, O>,
       OmitAnyKeys<BooleanSchema> {}
 
   interface ExtendedDateSchema<V = Date, O = true>
-    extends AnySchemaExtension<V, O>,
+    extends AnySchemaHelper<V, O>,
       OmitAnyKeys<DateSchema> {}
 
   interface ExtendedFunctionSchema<V = Function, O = true>
-    extends AnySchemaExtension<V, O>,
+    extends AnySchemaHelper<V, O>,
       OmitAnyKeys<FunctionSchema> {}
 
   /**
@@ -115,11 +115,11 @@ declare module 'joi' {
   type TupleToUnion<T extends GenericSchema[]> = T[number];
   type ResolveArrayTypes<T extends GenericSchema[]> = {
     // we force the array types to be required - to prevent putting undefined - [v1, undefined]
-    [K in keyof T]: T[K] extends AnySchemaExtension<infer V, infer O> ? pullType<V, false> : never;
+    [K in keyof T]: T[K] extends AnySchemaHelper<infer V, infer O> ? pullOneType<V, false> : never;
   };
 
   interface ExtendedArraySchema<ValueType = any[], Optional = true>
-    extends AnySchemaExtension<ValueType, Optional>,
+    extends AnySchemaHelper<ValueType, Optional>,
       Omit<OmitAnyKeys<ArraySchema>, 'items'> {
     items<T extends GenericSchema[]>(
       ...values: T
@@ -139,7 +139,7 @@ declare module 'joi' {
    */
 
   interface ExtendedObjectSchema<ValueType = any[], Optional = true>
-    extends AnySchemaExtension<ValueType, Optional>,
+    extends AnySchemaHelper<ValueType, Optional>,
       Omit<OmitAnyKeys<ObjectSchema>, 'keys'> {
     // keys<T extends ExtendedSchemaMap>(
     //   schema: T
@@ -282,9 +282,9 @@ declare module 'joi' {
   //   alts: T
   // ): BoxAlternativesSchema<Box<extractType<typeof alts[number]>, false>>;
 
-  type pullType<V, O> = O extends false ? V : V | undefined;
+  type pullOneType<V, O> = O extends false ? V : V | undefined;
 
-  type GenericSchema = AnySchemaExtension<any, boolean>;
+  type GenericSchema = AnySchemaHelper<any, boolean>;
   // type PrimitiveType = string | number | boolean | object | null;
   //
   // type ExtendedSchemaLike = PrimitiveType | GenericSchema | ExtendedSchemaMap;
@@ -293,5 +293,5 @@ declare module 'joi' {
   //   [key: string]: ExtendedSchemaLike | ExtendedSchemaLike[];
   // }
 
-  type extractType<T> = T extends AnySchemaExtension<infer V, infer O> ? pullType<V, O> : T;
+  type pullType<T> = T extends AnySchemaHelper<infer V, infer O> ? pullOneType<V, O> : T;
 }
