@@ -38,12 +38,12 @@ declare module 'joi' {
    * Every Schema that implements the Box to allow the extraction
    */
   type BoxedPrimitive<T extends BoxSchema = any> =
-    | BoxAnySchema<T>
-    | BoxStringSchema<T>
-    | BoxNumberSchema
-    | BoxBooleanSchema<T>
-    | BoxDateSchema<T>
-    | BoxFunctionSchema<T>
+    | ExtendedNumberSchema
+    | ExtendedBooleanSchema
+    | ExtendedDateSchema
+    | ExtendedFunctionSchema
+    | ExtendedAnySchema
+    | ExtendedStringSchema
     | BoxArraySchema<T>
     | BoxObjectSchema<T>
     | BoxAlternativesSchema<T>;
@@ -80,224 +80,66 @@ declare module 'joi' {
     callback: (err: ValidationError, value: extendsGuard<T, extractType<S>>) => R
   ): R;
 
-  // TODO: concat
-  // concat(schema: this): this;
-
-  // TODO: when
-  // when(ref: string, options: WhenOptions): BoxAlternativesSchema;
-  // when(ref: Reference, options: WhenOptions): BoxAlternativesSchema;
-  // when(ref: Schema, options: WhenSchemaOptions): BoxAlternativesSchema;
-
-  // TODO: see if .default union makes sense;
-
-  export interface BoxAnySchema<N extends Box<any, boolean>> extends AnySchema {
-    __schemaTypeLiteral: 'BoxAnySchema';
-
-    default<T>(
-      value: T,
-      description?: string
-    ): this extends BoxAnySchema<infer B> ? BoxAnySchema<BoxUnion<B, T>> : never;
-    default(value: any, description?: string): this;
-    default(): this;
-
-    allow<T>(
-      ...values: T[]
-    ): this extends BoxAnySchema<infer B> ? BoxAnySchema<BoxUnion<B, T>> : never;
-    allow<T>(
-      values: T[]
-    ): this extends BoxAnySchema<infer B> ? BoxAnySchema<BoxUnion<B, T>> : never;
-    allow(...values: any[]): this;
-    allow(values: any[]): this;
-
-    valid<T>(
-      ...values: T[]
-    ): this extends BoxAnySchema<infer B> ? BoxAnySchema<BoxType<B, T>> : never;
-    valid<T>(values: T[]): this extends BoxAnySchema<infer B> ? BoxAnySchema<BoxType<B, T>> : never;
-    valid(...values: any[]): this;
-    valid(values: any[]): this;
-
-    required(): this extends BoxAnySchema<infer B> ? BoxAnySchema<BoxReq<B, true>> : never;
-    required(): this;
-    exist(): this extends BoxAnySchema<infer B> ? BoxAnySchema<BoxReq<B, true>> : never;
-    exist(): this;
-    optional(): this extends BoxAnySchema<infer B> ? BoxAnySchema<BoxReq<B, false>> : never;
-    optional(): this;
-  }
-
   /**
-   * String: extraction decorated schema
+   * Any Schema extension
    */
-  export interface BoxStringSchema<N extends BoxSchema> extends StringSchema {
-    __schemaTypeLiteral: 'BoxStringSchema';
 
-    default<T extends string>(
-      value: T,
-      description?: string
-    ): this extends BoxStringSchema<infer B> ? BoxStringSchema<BoxUnion<B, T>> : never;
-    default(value: any, description?: string): this;
-    default(): this;
+  type AnyKeys = 'allow' | 'default' | 'exist' | 'optional' | 'required' | 'valid';
+  type OmitAnyKeys<T> = Omit<T, AnyKeys>;
 
+  interface AnySchemaExtension<ValueType, Optional = true> {
     allow<T>(
       ...values: T[]
-    ): this extends BoxStringSchema<infer B> ? BoxStringSchema<BoxUnion<B, T>> : never;
-    allow<T>(
-      values: T[]
-    ): this extends BoxStringSchema<infer B> ? BoxStringSchema<BoxUnion<B, T>> : never;
-    allow(...values: any[]): this;
-    allow(values: any[]): this;
-
-    valid<T extends string>(
-      ...values: T[]
-    ): this extends BoxStringSchema<infer B> ? BoxStringSchema<BoxType<B, T>> : never;
-    valid<T extends string>(
-      values: T[]
-    ): this extends BoxStringSchema<infer B> ? BoxStringSchema<BoxType<B, T>> : never;
-    valid(...values: any[]): this;
-    valid(values: any[]): this;
-
-    required(): this extends BoxStringSchema<infer B> ? BoxStringSchema<BoxReq<B, true>> : never;
-    required(): this;
-    exist(): this extends BoxStringSchema<infer B> ? BoxStringSchema<BoxReq<B, true>> : never;
-    exist(): this;
-    optional(): this extends BoxStringSchema<infer B> ? BoxStringSchema<BoxReq<B, false>> : never;
-    optional(): this;
-  }
-
-  /**
-   * Number: extraction decorated schema
-   */
-  export interface BoxNumberSchema<ValueType = number, Optional = true> extends NumberSchema {
-    __schemaTypeLiteral: 'BoxNumberSchema';
-
-    default<T extends ValueType>(value: T, description?: string): BoxNumberSchema<ValueType>;
-    default(): never;
-
-    allow<T>(
-      ...values: T[]
-    ): this extends BoxNumberSchema<infer V, infer O> ? BoxNumberSchema<V | T, O> : never;
+    ): this extends AnySchemaExtension<infer V, infer O> ? AnySchemaExtension<V | T, O> : never;
     allow(...values: any[]): never;
 
-    valid<T extends number>(
-      value: T,
-      ...values: T[]
-    ): this extends BoxNumberSchema<infer V, infer O> ? BoxNumberSchema<T, O> : never;
-    valid(...values: any[]): never;
-
-    required(): BoxNumberSchema<ValueType, false>;
-    required(): never;
+    default<T extends ValueType>(value: T, description?: string): AnySchemaExtension<ValueType>;
+    default(): never;
 
     // alias of required
-    exist(): BoxNumberSchema<ValueType, false>;
+    exist(): AnySchemaExtension<ValueType, false>;
     exist(): never;
 
-    optional(): BoxNumberSchema<ValueType>;
+    optional(): AnySchemaExtension<ValueType>;
     optional(): this;
-  }
 
-  /**
-   * Boolean: extraction decorated schema
-   */
-  export interface BoxBooleanSchema<N extends BoxSchema> extends BooleanSchema {
-    __schemaTypeLiteral: 'BoxBooleanSchema';
+    required(): AnySchemaExtension<ValueType, false>;
+    required(): never;
 
-    default<T extends boolean>(
+    valid<T extends ValueType>(
       value: T,
-      description?: string
-    ): this extends BoxBooleanSchema<infer B> ? BoxBooleanSchema<BoxUnion<B, T>> : never;
-    default(value: any, description?: string): this;
-    default(): this;
-
-    allow<T>(
       ...values: T[]
-    ): this extends BoxBooleanSchema<infer B> ? BoxBooleanSchema<BoxUnion<B, T>> : never;
-    allow<T>(
-      values: T[]
-    ): this extends BoxBooleanSchema<infer B> ? BoxBooleanSchema<BoxUnion<B, T>> : never;
-    allow(...values: any[]): this;
-    allow(values: any[]): this;
-
-    valid<T extends string>(
-      ...values: T[]
-    ): this extends BoxBooleanSchema<infer B> ? BoxBooleanSchema<BoxType<B, T>> : never;
-    valid<T extends string>(
-      values: T[]
-    ): this extends BoxBooleanSchema<infer B> ? BoxBooleanSchema<BoxType<B, T>> : never;
-    valid(...values: any[]): this;
-    valid(values: any[]): this;
-
-    required(): this extends BoxBooleanSchema<infer B> ? BoxBooleanSchema<BoxReq<B, true>> : never;
-    required(): this;
-    exist(): this extends BoxBooleanSchema<infer B> ? BoxBooleanSchema<BoxReq<B, true>> : never;
-    exist(): this;
-    optional(): this extends BoxBooleanSchema<infer B> ? BoxBooleanSchema<BoxReq<B, false>> : never;
-    optional(): this;
+    ): this extends AnySchemaExtension<infer V, infer O> ? AnySchemaExtension<T, O> : never;
+    valid(...values: any[]): never;
   }
 
   /**
-   * Date: extraction decorated schema
+   * Primitives Schema
    */
-  export interface BoxDateSchema<N extends BoxSchema> extends DateSchema {
-    __schemaTypeLiteral: 'BoxDateSchema';
 
-    default<T extends Date>(
-      value: T,
-      description?: string
-    ): this extends BoxDateSchema<infer B> ? BoxDateSchema<BoxUnion<B, T>> : never;
-    default(value: any, description?: string): this;
-    default(): this;
+  interface ExtendedAnySchema<V = any, O = true>
+    extends AnySchemaExtension<V, O>,
+      OmitAnyKeys<AnySchema> {}
 
-    allow<T>(
-      ...values: T[]
-    ): this extends BoxDateSchema<infer B> ? BoxDateSchema<BoxUnion<B, T>> : never;
-    allow<T>(
-      values: T[]
-    ): this extends BoxDateSchema<infer B> ? BoxDateSchema<BoxUnion<B, T>> : never;
-    allow(...values: any[]): this;
-    allow(values: any[]): this;
+  interface ExtendedStringSchema<V = any, O = true>
+    extends AnySchemaExtension<V, O>,
+      OmitAnyKeys<StringSchema> {}
 
-    valid<T extends string>(
-      ...values: T[]
-    ): this extends BoxDateSchema<infer B> ? BoxDateSchema<BoxType<B, T>> : never;
-    valid<T extends string>(
-      values: T[]
-    ): this extends BoxDateSchema<infer B> ? BoxDateSchema<BoxType<B, T>> : never;
-    valid(...values: any[]): this;
-    valid(values: any[]): this;
+  interface ExtendedNumberSchema<V = number, O = true>
+    extends AnySchemaExtension<V, O>,
+      OmitAnyKeys<NumberSchema> {}
 
-    required(): this extends BoxDateSchema<infer B> ? BoxDateSchema<BoxReq<B, true>> : never;
-    required(): this;
-    exist(): this extends BoxDateSchema<infer B> ? BoxDateSchema<BoxReq<B, true>> : never;
-    exist(): this;
-    optional(): this extends BoxDateSchema<infer B> ? BoxDateSchema<BoxReq<B, false>> : never;
-    optional(): this;
-  }
+  interface ExtendedBooleanSchema<V = boolean, O = true>
+    extends AnySchemaExtension<V, O>,
+      OmitAnyKeys<BooleanSchema> {}
 
-  /**
-   * Function: extraction decorated schema
-   */
-  export interface BoxFunctionSchema<N extends BoxSchema> extends FunctionSchema {
-    __schemaTypeLiteral: 'BoxFunctionSchema';
+  interface ExtendedDateSchema<V = Date, O = true>
+    extends AnySchemaExtension<V, O>,
+      OmitAnyKeys<DateSchema> {}
 
-    allow<T>(
-      ...values: T[]
-    ): this extends BoxFunctionSchema<infer B> ? BoxFunctionSchema<BoxUnion<B, T>> : never;
-    allow<T>(
-      values: T[]
-    ): this extends BoxFunctionSchema<infer B> ? BoxFunctionSchema<BoxUnion<B, T>> : never;
-    allow(...values: any[]): this;
-    allow(values: any[]): this;
-
-    required(): this extends BoxFunctionSchema<infer B>
-      ? BoxFunctionSchema<BoxReq<B, true>>
-      : never;
-    required(): this;
-    exist(): this extends BoxFunctionSchema<infer B> ? BoxFunctionSchema<BoxReq<B, true>> : never;
-    exist(): this;
-    optional(): this extends BoxFunctionSchema<infer B>
-      ? BoxFunctionSchema<BoxReq<B, false>>
-      : never;
-    optional(): this;
-  }
+  interface ExtendedFunctionSchema<V = Function, O = true>
+    extends AnySchemaExtension<V, O>,
+      OmitAnyKeys<FunctionSchema> {}
 
   /**
    * Array: extraction decorated schema
@@ -373,12 +215,13 @@ declare module 'joi' {
       : never;
     append(schema?: SchemaMap): this;
 
-    pattern<S extends BoxStringSchema<any>, T extends mappedSchema>(
-      pattern: S,
-      schema: T
-    ): this extends BoxObjectSchema<infer B>
-      ? BoxObjectSchema<BoxIntersection<B, extractMap<{ [key in extractType<S>]: T }>>>
-      : never;
+    // TODO: janusz correct this
+    // pattern<S extends ExtendedStringSchema, T extends mappedSchema>(
+    //   pattern: S,
+    //   schema: T
+    // ): this extends BoxObjectSchema<infer B>
+    //   ? BoxObjectSchema<BoxIntersection<B, extractMap<{ [key in extractType<S>]: T }>>>
+    //   : never;
     pattern<T extends mappedSchema>(
       pattern: RegExp,
       schema: T
@@ -464,17 +307,12 @@ declare module 'joi' {
   }
 
   // Factory methods.
-  export function any<T extends any>(): BoxAnySchema<Box<T, false>>;
-
-  export function string<T extends string>(): BoxStringSchema<Box<T, false>>;
-
-  export function number<T extends number>(): BoxNumberSchema;
-
-  export function boolean<T extends boolean>(): BoxBooleanSchema<Box<T, false>>;
-
-  export function date<T extends Date>(): BoxDateSchema<Box<T, false>>;
-
-  export function func<T extends Function>(): BoxFunctionSchema<Box<T, false>>;
+  export function any(): ExtendedAnySchema;
+  export function string(): ExtendedStringSchema;
+  export function number(): ExtendedNumberSchema;
+  export function boolean(): ExtendedBooleanSchema;
+  export function date(): ExtendedDateSchema;
+  export function func(): ExtendedFunctionSchema;
 
   export function array(): BoxArraySchema<Box<never, false>>;
 
@@ -516,7 +354,7 @@ declare module 'joi' {
     { [K in keyof Required<T>]: extractType<T[K]> };
 
   type maybeExtractBox<T> = T extends Box<infer O, infer R> ? O : T;
-  type maybeExtractNew<V, O> = O extends false ? V : V | undefined;
+  type pullPrimitiveType<V, O> = O extends false ? V : V | undefined;
 
   // prettier-ignore
   type extractOne<T extends mappedSchema> =
@@ -524,12 +362,7 @@ declare module 'joi' {
     T extends primitiveType ? T :
 
     /** Holds the extracted type */
-    T extends BoxAnySchema<infer O> ? maybeExtractBox<O> :
-    T extends BoxBooleanSchema<infer O> ? maybeExtractBox<O> :
-    T extends BoxStringSchema<infer O> ? maybeExtractBox<O> :
-    T extends BoxNumberSchema<infer V, infer O> ? maybeExtractNew<V, O> :
-    T extends BoxDateSchema<infer O> ? maybeExtractBox<O> :
-    T extends BoxFunctionSchema<infer O> ? maybeExtractBox<O> :
+    T extends AnySchemaExtension<infer V, infer O> ? pullPrimitiveType<V, O> :
     T extends BoxArraySchema<infer O> ? maybeExtractBox<O>[] :
     T extends BoxObjectSchema<infer O> ? maybeExtractBox<O> :
     T extends BoxAlternativesSchema<infer O> ? maybeExtractBox<O> :
