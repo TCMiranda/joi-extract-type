@@ -1,7 +1,7 @@
 /** @format */
 
-import * as Joi from '@hapi/joi';
-import './index';
+import * as Joi from 'joi';
+import '../index';
 
 const extJoi = Joi.extend({} as Joi.Extension);
 

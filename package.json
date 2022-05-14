@@ -17,13 +17,14 @@
     "Types",
     "Extraction"
   ],
-  "author": "Tiago de Carvalho Miranda",
+  "author": "Janusz Wozniak, in collaboration with Tiago de Carvalho Miranda",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/TCMiranda/joi-extract-type/issues"
   },
   "homepage": "https://github.com/TCMiranda/joi-extract-type#readme",
   "devDependencies": {
+    "prettier": "^2.6.2",
     "rimraf": "^3.0.2",
     "tsd": "^0.20.0",
     "typescript": "^4.6.4"
