@@ -1,62 +1,16 @@
 /** @format */
 
 import * as Joi from 'joi';
+import { AnySchema } from 'joi';
 // import { ObjectSchema, Schema } from 'joi';
-
-/**
- * Helpers
- */
-// type ArrayType<T> = T extends (infer U)[] ? U : never;
 
 declare module 'joi' {
   /**
-   * Allow extend() to use Joi types by default
-   */
-  // export function extend(
-  //   extension: Extension | Extension[],
-  //   ...extensions: Array<Extension | Extension[]>
-  // ): typeof Joi;
-
-  // export type mappedSchema = BoxedPrimitive;
-  // export type ExtendedSchemaMap = Record<string, GenericSchema>;
-
-  // export type extendsGuard<T, S> = S extends T ? S : T;
-
-  /**
-   * Validation: extraction decorated methods
-   */
-  // export function validate<T, S extends mappedSchemaMap>(
-  //   value: T,
-  //   schema: S
-  // ): ValidationResult<extendsGuard<T, extractType<S>>>;
-  // export function validate<T, S extends mappedSchemaMap>(
-  //   value: T,
-  //   schema: S,
-  //   options: ValidationOptions
-  // ): ValidationResult<extendsGuard<T, extractType<S>>>;
-  // export function validate<T, R, S extends mappedSchemaMap>(
-  //   value: T,
-  //   schema: S,
-  //   options: ValidationOptions,
-  //   callback: (err: ValidationError, value: extendsGuard<T, extractType<S>>) => R
-  // ): R;
-  // export function validate<T, R, S extends mappedSchemaMap>(
-  //   value: T,
-  //   schema: S,
-  //   callback: (err: ValidationError, value: extendsGuard<T, extractType<S>>) => R
-  // ): R;
-
-  /**
-   * ------------------------------------------------------------------------------------
-   * ------------------------------------------------------------------------------------
-   * ------------------------------------------------------------------------------------
-   * ------------------------------------------------------------------------------------
-   * ------------------------------------------------------------------------------------
    * Generic Schema helper
    */
 
-  type AnyKeys = 'allow' | 'default' | 'exist' | 'optional' | 'required' | 'valid';
-  type OmitAnyKeys<T> = Omit<T, AnyKeys>;
+  type ExtendedAnyKeys = 'allow' | 'default' | 'exist' | 'optional' | 'required' | 'valid';
+  type OmitExtendedAnyKeys<T> = Omit<T, ExtendedAnyKeys>;
 
   interface AnySchemaHelper<ValueType, Optional = true> {
     allow<T>(
@@ -84,43 +38,47 @@ declare module 'joi' {
    *  Primitive Schemas
    */
 
-  interface ExtendedAnySchema<V = any, O = true>
-    extends AnySchemaHelper<V, O>,
-      OmitAnyKeys<AnySchema> {}
+  interface ExtendedAnySchema<O = true>
+    extends AnySchemaHelper<any, O>,
+      OmitExtendedAnyKeys<AnySchema> {}
 
-  interface ExtendedStringSchema<V = string, O = true>
-    extends AnySchemaHelper<V, O>,
-      OmitAnyKeys<StringSchema> {}
+  interface ExtendedStringSchema<O = true>
+    extends AnySchemaHelper<string, O>,
+      OmitExtendedAnyKeys<StringSchema> {}
 
-  interface ExtendedNumberSchema<V = number, O = true>
-    extends AnySchemaHelper<V, O>,
-      OmitAnyKeys<NumberSchema> {}
+  interface ExtendedNumberSchema<O = true>
+    extends AnySchemaHelper<number, O>,
+      OmitExtendedAnyKeys<NumberSchema> {}
 
-  interface ExtendedBooleanSchema<V = boolean, O = true>
-    extends AnySchemaHelper<V, O>,
-      OmitAnyKeys<BooleanSchema> {}
+  interface ExtendedBooleanSchema<O = true>
+    extends AnySchemaHelper<boolean, O>,
+      OmitExtendedAnyKeys<BooleanSchema> {}
 
-  interface ExtendedDateSchema<V = Date, O = true>
-    extends AnySchemaHelper<V, O>,
-      OmitAnyKeys<DateSchema> {}
+  interface ExtendedDateSchema<O = true>
+    extends AnySchemaHelper<Date, O>,
+      OmitExtendedAnyKeys<DateSchema> {}
 
-  interface ExtendedFunctionSchema<V = Function, O = true>
-    extends AnySchemaHelper<V, O>,
-      OmitAnyKeys<FunctionSchema> {}
+  interface ExtendedFunctionSchema<O = true>
+    extends AnySchemaHelper<Function, O>,
+      OmitExtendedAnyKeys<FunctionSchema> {}
 
   /**
    *  Array Schema - ValueType keeps resolved types
    */
 
+  type ResolveToRequired<T> = T extends AnySchemaHelper<infer V, infer O>
+    ? MaybeType<V, false>
+    : never;
+
   type TupleToUnion<T extends GenericSchema[]> = T[number];
   type ResolveArrayTypes<T extends GenericSchema[]> = {
     // we force the array types to be required - to prevent putting undefined - [v1, undefined]
-    [K in keyof T]: T[K] extends AnySchemaHelper<infer V, infer O> ? pullOneType<V, false> : never;
+    [K in keyof T]: ResolveToRequired<T[K]>;
   };
 
   interface ExtendedArraySchema<ValueType = any[], Optional = true>
     extends AnySchemaHelper<ValueType, Optional>,
-      Omit<OmitAnyKeys<ArraySchema>, 'items'> {
+      Omit<OmitExtendedAnyKeys<ArraySchema>, 'items'> {
     items<T extends GenericSchema[]>(
       ...values: T
     ): this extends ExtendedArraySchema<infer V, infer O>
@@ -132,21 +90,74 @@ declare module 'joi' {
     ): this extends ExtendedArraySchema<infer V, infer O>
       ? ExtendedArraySchema<ResolveArrayTypes<TupleToUnion<T>[]>, O>
       : never;
+
+    // TODO: add ordered - simply not resolve tuple
   }
 
   /**
    * Object: Object Schema
    */
 
-  interface ExtendedObjectSchema<ValueType = any[], Optional = true>
+  // TS bug prevented me of using common parametrized type. I had to split it into two
+  // GetOptionalKeys andGetRequiredKeys types - with 'extends false' instead of 'extends OptionalCase'
+  export type GetOptionalKeys<T extends ObjectSchemaArgument> = {
+    [K in keyof T]: T[K] extends AnySchemaHelper<infer V, infer O>
+      ? // TS bug: false can be changed to true and it behave as nothing happen
+        // reordered the '? : ' values instead
+        O extends false
+        ? never
+        : K
+      : never;
+  }[keyof T];
+
+  export type GetRequiredKeys<T extends ObjectSchemaArgument> = {
+    [K in keyof T]: T[K] extends AnySchemaHelper<infer V, infer O>
+      ? O extends false
+        ? K
+        : never
+      : never;
+  }[keyof T];
+
+  type OptionalObjectKeys<T, Keys> = {
+    [K in keyof T as Extract<K, Keys>]?: T[K];
+  };
+
+  type RequiredObjectKeys<T, Keys> = {
+    [K in keyof T as Extract<K, Keys>]-?: T[K];
+  };
+
+  type ResolveObjectValues<T> = {
+    [K in keyof T]: ResolveToRequired<T[K]>;
+  };
+
+  type ResolveObjectTypes<
+    T extends ObjectSchemaArgument,
+    R = ResolveObjectValues<T>,
+    OptionalKeys = GetOptionalKeys<T>,
+    RequiredKeys = GetRequiredKeys<T>
+  > = OptionalObjectKeys<R, OptionalKeys> & RequiredObjectKeys<R, RequiredKeys>;
+
+  interface ExtendedObjectSchema<ValueType = {}, Optional = true>
     extends AnySchemaHelper<ValueType, Optional>,
-      Omit<OmitAnyKeys<ObjectSchema>, 'keys'> {
-    // keys<T extends ExtendedSchemaMap>(
-    //   schema: T
-    // ): this extends BoxObjectSchema<infer B>
-    //   ? BoxObjectSchema<BoxIntersection<B, extractMap<T>>>
-    //   : never;
-    // keys(schema?: SchemaMap): this;
+      Omit<OmitExtendedAnyKeys<ObjectSchema>, 'keys' | 'append' | 'pattern'> {
+    keys<T extends ObjectSchemaArgument>(
+      schema: T
+    ): this extends ExtendedObjectSchema<infer V, infer O>
+      ? ExtendedObjectSchema<V & ResolveObjectTypes<T>, O>
+      : never;
+
+    append<T extends ObjectSchemaArgument>(
+      schema: T
+    ): this extends ExtendedObjectSchema<infer V, infer O>
+      ? ExtendedObjectSchema<V & ResolveObjectTypes<T>, O>
+      : never;
+
+    pattern<T extends GenericSchema>(
+      pattern: any,
+      schema: T
+    ): this extends ExtendedObjectSchema<infer V, infer O>
+      ? ExtendedObjectSchema<{ [key: string]: ResolveToRequired<T> } & V, O>
+      : never;
   }
 
   // export interface BoxObjectSchema<N extends BoxSchema> extends ObjectSchema {
@@ -249,10 +260,6 @@ declare module 'joi' {
   // }
 
   /**
-   *  Composing types
-   */
-
-  /**
    *  Methods
    */
 
@@ -264,10 +271,41 @@ declare module 'joi' {
   export function func(): ExtendedFunctionSchema;
   export function array(): ExtendedArraySchema;
 
-  // export function object<T extends mappedSchemaMap>(
-  //   schema?: T
-  // ): BoxObjectSchema<Box<extractMap<T>, false>>;
-  //
+  export function object<T extends ObjectSchemaArgument>(
+    schema?: T
+  ): ExtendedObjectSchema<ResolveObjectTypes<T>>;
+  /**
+   * Allow extend() to use Joi types by default
+   */
+  // export function extend(
+  //   extension: Extension | Extension[],
+  //   ...extensions: Array<Extension | Extension[]>
+  // ): typeof Joi;
+
+  /**
+   * Validation: extraction decorated methods
+   */
+  // export function validate<T, S extends mappedSchemaMap>(
+  //   value: T,
+  //   schema: S
+  // ): ValidationResult<extendsGuard<T, extractType<S>>>;
+  // export function validate<T, S extends mappedSchemaMap>(
+  //   value: T,
+  //   schema: S,
+  //   options: ValidationOptions
+  // ): ValidationResult<extendsGuard<T, extractType<S>>>;
+  // export function validate<T, R, S extends mappedSchemaMap>(
+  //   value: T,
+  //   schema: S,
+  //   options: ValidationOptions,
+  //   callback: (err: ValidationError, value: extendsGuard<T, extractType<S>>) => R
+  // ): R;
+  // export function validate<T, R, S extends mappedSchemaMap>(
+  //   value: T,
+  //   schema: S,
+  //   callback: (err: ValidationError, value: extendsGuard<T, extractType<S>>) => R
+  // ): R;
+
   // export function alternatives<T extends mappedSchema[]>(
   //   ...alts: T
   // ): BoxAlternativesSchema<Box<extractType<typeof alts[number]>, false>>;
@@ -282,16 +320,15 @@ declare module 'joi' {
   //   alts: T
   // ): BoxAlternativesSchema<Box<extractType<typeof alts[number]>, false>>;
 
-  type pullOneType<V, O> = O extends false ? V : V | undefined;
+  type MaybeType<V, Optional> = Optional extends false ? V : V | undefined;
 
   type GenericSchema = AnySchemaHelper<any, boolean>;
-  // type PrimitiveType = string | number | boolean | object | null;
-  //
-  // type ExtendedSchemaLike = PrimitiveType | GenericSchema | ExtendedSchemaMap;
-  //
-  // interface ExtendedSchemaMap {
-  //   [key: string]: ExtendedSchemaLike | ExtendedSchemaLike[];
-  // }
+  type ObjectOrArraySchema = GenericSchema; // | GenericSchema[];
+  type ObjectSchemaArgument = Record<string, ObjectOrArraySchema>;
 
-  type pullType<T> = T extends AnySchemaHelper<infer V, infer O> ? pullOneType<V, O> : T;
+  type pullType<T> = T extends AnySchemaHelper<infer V, infer O> ? MaybeType<V, O> : T;
+
+  // TODO: add
+  //  pullInType = pullType
+  //  pullOutType = pullType where default types are mandatory
 }
